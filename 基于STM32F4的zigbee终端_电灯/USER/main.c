@@ -6,17 +6,17 @@
 #include "timer.h"
 
 int main(void) {
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//ÉèÖÃÏµÍ³ÖĞ¶ÏÓÅÏÈ¼¶·Ö×é2
-	delay_init(168);    //³õÊ¼»¯ÑÓÊ±º¯Êı 
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//è®¾ç½®ç³»ç»Ÿä¸­æ–­ä¼˜å…ˆçº§åˆ†ç»„2
+	delay_init(168);    //åˆå§‹åŒ–å»¶æ—¶å‡½æ•° 
 	OLED_Init();
 	LED_Init();
 	BEEP_Init();
 	Zigbee_Init(115200);
-	TIM3_PWM_Init(500-1,84-1);//84M/84=1MhzµÄ¼ÆÊıÆµÂÊ,ÖØ×°ÔØÖµ500£¬ËùÒÔPWMÆµÂÊÎª 1M/500=2Khz.(ÖÜÆÚÎª500us)
+	TIM3_PWM_Init(500-1,84-1);//84M/84=1Mhzçš„è®¡æ•°é¢‘ç‡,é‡è£…è½½å€¼500ï¼Œæ‰€ä»¥PWMé¢‘ç‡ä¸º 1M/500=2Khz.(å‘¨æœŸä¸º500us)
 	while (1){
-		//µçµÆ¸ù¾İÄ£Ê½¹¤×÷
+		//ç”µç¯æ ¹æ®æ¨¡å¼å·¥ä½œ
 		if(LEDmode == 0){
-			TIM_SetCompare1(TIM3,PWMval);	//ĞŞ¸Ä±È½ÏÖµ£¬ĞŞ¸ÄÕ¼¿Õ±È
+			TIM_SetCompare1(TIM3,PWMval);	//ä¿®æ”¹æ¯”è¾ƒå€¼ï¼Œä¿®æ”¹å ç©ºæ¯”
 		}
 		else if(LEDmode == 1){
 			if(PWMval == 500) direction = 0;
