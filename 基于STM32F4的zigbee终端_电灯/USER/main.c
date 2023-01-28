@@ -14,6 +14,7 @@ int main(void) {
 	Zigbee_Init(115200);
 	TIM3_PWM_Init(500-1,84-1);//84M/84=1Mhz的计数频率,重装载值500，所以PWM频率为 1M/500=2Khz.(周期为500us)
 	while (1){
+		//电灯根据模式工作
 		if(LEDmode == 0){
 			TIM_SetCompare1(TIM3,PWMval);	//修改比较值，修改占空比
 		}
