@@ -26,18 +26,28 @@ Device* DeviceList;//设备长短地址数据库
 int main(void) {
   	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(168);    //初始化延时函数 
+	Zigbee_Init(115200);	
 	OLED_Init();		//初始化OLED
 	OLED_Show_Chinese(2,1,welcome_C,5);//系统开机显示欢迎界面，界面消失表示成功进入系统
 	LED_Init();			//初始化中控指示灯函数
 	BEEP_Init();		//初始化中控蜂鸣器函数
-	Zigbee_Init(115200);	
 	DeviceList = createList();//这里还是没有引入掉电保存功能，之后将用load函数代替
 	USART2_Init(115200);
 	TIM3_Int_Init(10000-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10000次为1s     
 	OLED_Clear();
+	u8 ladd[] = {1,1,1,1,1,1,1,1};
+	u8 sadd3[] = {3,3};
+	u8 sadd2[] = {2,2};
+	u8 sadd1[] = {1,1};
+	u8 sadd4[] = {4,4};
+		insertNodeByType(DeviceList,03,ladd,sadd1);
+		insertNodeByType(DeviceList,01,ladd,sadd2);
+		insertNodeByType(DeviceList,03,ladd,sadd3);
+		insertNodeByType(DeviceList,04,ladd,sadd4);
 	while (1){
 		LED_Test(GPIOF,GPIO_Pin_9,400);
-		
+		printList(DeviceList);
+		delay_ms(5000);
   	}
 
 }

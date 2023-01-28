@@ -61,19 +61,37 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	}
 	if(USARTx == USART2){
+		
 		USART_SendData(USART2, 0xA1);
-		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 		USART_SendData(USART2, 0xA2);
-		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 		USART_SendData(USART2, 0xA3);
-		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 		USART_SendData(USART2, 0xA4);
-		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 
 		for(u8 i = 0; i < 8; i++){
-			USART_SendData(USART1, SelfLongAddr[i]);
-			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+			USART_SendData(USART2, SelfLongAddr[i]);
+			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 		}
+		
+		USART_SendData(USART2, type);
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
+
+		USART_SendData(USART2, len);
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
+
+		for(u8 i = 0; i < len; i++){
+			USART_SendData(USART2, Data[i]);
+			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
+		}
+
+		USART_SendData(USART2, 0x0D);
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
+		
+		USART_SendData(USART2, 0x0A);
+		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 
 		
 	}

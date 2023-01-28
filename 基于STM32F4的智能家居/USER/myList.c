@@ -25,39 +25,28 @@ Device* createNode(u8 type, u8* LongAddr, u8* ShortAddr) {
 }
 
 Device* createList(void) {
-	u8 i;
 	//创建表头
 	Device* headNode = (Device*)malloc(sizeof(Device));//指针变成了结构体变量
 	headNode->type = 0;
-	Device* pMove = (Device*)malloc(sizeof(Device));//指针变成了结构体变量
-	pMove = headNode;
-	for (i = 1; i <= 5; i++) {
-		Device* newNode = (Device*)malloc(sizeof(Device));
-		newNode->type = i;
-		newNode->OnlineFlag = 0;
-		newNode->next = NULL;
-		newNode->ShortAddr[0] = 0;
-		newNode->ShortAddr[1] = 0;
-		pMove->next = newNode;
-		pMove = newNode;
-	}
-	Device* newNode = (Device*)malloc(sizeof(Device));
-	newNode->type = 0xFF;
-	newNode->next = NULL;
-	pMove->next = newNode;
-	pMove = newNode;
+	headNode->next = NULL;
 	return headNode;
 }
 
 void insertNodeByType(Device* headNode, u8 type, u8* LongAddr, u8* ShortAddr) {
-	Device* pMove = headNode;
-	while (pMove->next->type <= type) {
-		pMove = pMove->next;
-	}//定位在type为指定数字的前一个(这个位置的type是小于type的)
+	Device* posNode = headNode;
+	Device* posNodeFront;
+	while (posNode->type <= type && posNode->next != NULL) {
+		posNodeFront = posNode;
+		posNode = posNode->next;
+	}//定位在type为指定数字或的最后一个
 	Device* newNode = createNode(type, LongAddr, ShortAddr);
 	newNode->OnlineFlag = 1;
-	newNode->next = pMove->next;
-	pMove->next = newNode;
+	if(posNode->type > type){//如果不是最后一个
+		posNodeFront->next = newNode;
+		newNode->next = posNode;
+	}else{
+		posNode->next = newNode;
+	}
 }
 
 void deleteNodeByLongAddr(Device* headNode, u8* LongAddr) {
@@ -86,11 +75,10 @@ u8 checkByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
 
 void printList(Device* headNode) {
 	Device* pMove = headNode->next;
-	while (pMove->type != 0xFF) {
-		if (pMove->ShortAddr[0] != 0 || pMove->ShortAddr[1] != 0) {
-			Send_Custom_Data(USART2,0xFF,8,pMove->LongAddr);
-			Send_Custom_Data(USART2,0xFF,2,pMove->ShortAddr);
-		}
+	while (pMove != NULL) {
+		//调试用
+		Send_Custom_Data(USART2,pMove->type,8,pMove->LongAddr);
+		Send_Custom_Data(USART2,pMove->type,2,pMove->ShortAddr);
 		pMove = pMove->next;
 	}
 }
