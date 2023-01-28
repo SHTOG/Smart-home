@@ -1,1 +1,84 @@
-# main.py
+# -*-coding:utf-8-*-
+import time
+from machine import Pin
+import ubinascii
+import machine
+import network
+from umqtt import MQTTClient
+
+
+# ESP8266 ESP-12 modules have blue, active-low LED on GPIO2, replace
+# with something else if needed.
+led = Pin(13, Pin.OUT, value=1)
+
+# WiFi
+# WiFi
+SSID = "xxxxxx"
+PASSWORD = "xxxxxx"
+
+# Default MQTT server to connect to
+username = "ESP32-C3-username"
+password = "ESP32-C3-password"
+SERVER = "192.168.10.174"
+CLIENT_ID = ubinascii.hexlify(machine.unique_id())
+TOPIC = b"TestTopic"
+
+
+def connect_wifi(ssid, passwd):
+    print("connecting wifi!")
+    global wlan
+    wlan = network.WLAN(network.STA_IF)  # create a wlan object
+    wlan.active(True)  # Activate the network interface
+    wlan.disconnect()  # Disconnect the last connected WiFi
+    wlan.connect(ssid, passwd)  # connect wifi
+    while (wlan.ifconfig()[0] == '0.0.0.0'):
+        time.sleep(1)
+    # print(wlan.ifconfig())
+    wlan_info = wlan.ifconfig()
+    print("Wifi is connected with the following information:")
+    print("IP address : " + wlan_info[0])
+    print("Subnet mask : " + wlan_info[1])
+    print("Gateway : " + wlan_info[2])
+    print("DNS : " + wlan_info[3])
+
+
+state = 0
+
+
+def sub_cb(topic, msg):
+    global state
+    print((topic, msg))
+    if msg == b"off":
+        led.value(0)
+        state = 1
+        print("1")
+    elif msg == b"on":
+        led.value(1)
+        state = 0
+        print("0")
+    elif msg == b"toggle":
+        # LED is inversed, so setting it to current state
+        # value will make it toggle
+        led.value(state)
+        state = 1 - state
+
+
+# Catch exceptions,stop program if interrupted accidentally in the 'try'
+try:
+    connect_wifi(SSID, PASSWORD)
+    server = SERVER
+    c = MQTTClient(CLIENT_ID, server, 0, username, password,
+                   keepalive=30, ssl=False, ssl_params={})  # create a mqtt client
+    c.set_callback(sub_cb)  # set callback
+    c.connect()  # connect mqtt
+    c.subscribe(TOPIC)  # client subscribes to a topic
+
+    print("Connected to %s, subscribed to %s topic" % (server, TOPIC))
+
+    while True:
+        c.wait_msg()  # wait message
+finally:
+    # if (c is not None):
+    #     c.disconnect()
+    wlan.disconnect()
+    wlan.active(False)
