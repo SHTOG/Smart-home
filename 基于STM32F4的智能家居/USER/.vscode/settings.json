@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "delay.h": "c",
+        "usart.h": "c",
+        "sys.h": "c",
+        "analyseandsend.h": "c",
+        "zigbee.h": "c",
+        "timer.h": "c"
+    }
+}
