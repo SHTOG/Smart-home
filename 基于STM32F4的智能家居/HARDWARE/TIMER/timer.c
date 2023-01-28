@@ -39,8 +39,9 @@ void TIM3_IRQHandler(void){
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET){ //溢出中断
 		static u8 counter = 0;
 		counter++;
+		LED1 = !LED1;
 		if(counter == 64){//每秒向云端发送入网设备信息
-			printList(DeviceList);
+//			printList(DeviceList);
 			counter = 0;
 		}
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位

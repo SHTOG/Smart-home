@@ -74,11 +74,11 @@ u8 Zigbee_Change_Mode(u8 modeNum){
 	else if(modeNum == 1){
 		//进入透传模式
 		while(1){
-			delay_ms(50);
 			for(i = 0; i < 9;i++){
 				USART_SendData(USART1, EnterMode1[i]);         //向串口1发送数据
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 			}
+			delay_ms(100);
 			if(USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x11 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x11){//55 04 00 11 00 11 
 				return 1;
 			}

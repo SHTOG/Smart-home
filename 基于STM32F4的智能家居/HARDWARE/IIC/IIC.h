@@ -14,10 +14,9 @@
 void IIC_Init(void);
 void IIC_Start(void);
 void IIC_Stop(void);
-unsigned char IIC_Wait_Ack(void);
+void IIC_Send_Byte(u8 Byte);
+u8 IIC_Read_Byte(u8 ack);
+u8 IIC_Wait_Ack(void);
 void IIC_Ack(void);
 void IIC_NAck(void);
-void IIC_Send_Byte(unsigned char Byte);
-unsigned char IIC_Read_Byte(unsigned char ack);
-
 #endif

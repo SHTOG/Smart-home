@@ -19,7 +19,7 @@ void Analyse_Custom_Data(){
 		type = USART1_RX_BUF[14];
 		DeviceShortAddr[0] = USART1_RX_BUF[15];
 		DeviceShortAddr[1] = USART1_RX_BUF[16];
-		if(checkByLongAddr(DeviceList,DeviceLongAddr) == 0){
+		if(checkByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
 			insertNodeByType(DeviceList,type,DeviceLongAddr,DeviceShortAddr);
 		}
 

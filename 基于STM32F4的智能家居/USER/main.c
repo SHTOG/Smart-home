@@ -9,6 +9,7 @@
 #include "myList.h"
 #include "AnalyseAndSend.h"
 #include "timer.h"
+#include "24cxx.h"
 //#include "u8x8.h"
 //#include "u8g2.h"
 
@@ -25,10 +26,10 @@ Device* DeviceList;//设备长短地址数据库
 int main(void) {
   	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(168);    //初始化延时函数 
-	LED_Init();			//初始化中控指示灯函数
-	BEEP_Init();		//初始化中控蜂鸣器函数
 	OLED_Init();		//初始化OLED
 	OLED_Show_Chinese(2,1,welcome_C,5);//系统开机显示欢迎界面，界面消失表示成功进入系统
+	LED_Init();			//初始化中控指示灯函数
+	BEEP_Init();		//初始化中控蜂鸣器函数
 	Zigbee_Init(115200);	
 	DeviceList = createList();//这里还是没有引入掉电保存功能，之后将用load函数代替
 	USART2_Init(115200);
@@ -36,7 +37,6 @@ int main(void) {
 	OLED_Clear();
 	while (1){
 		LED_Test(GPIOF,GPIO_Pin_9,400);
-		LED_Test(GPIOF,GPIO_Pin_10,400);
 		
   	}
 

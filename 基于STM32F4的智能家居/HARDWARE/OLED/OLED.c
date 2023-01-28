@@ -39,7 +39,7 @@ void OLED_Init(void){
 	OLED_Write_Cmd(0x8d);//–set Charge Pump enable/disable
 	OLED_Write_Cmd(0x14);//–set(0x10) disable
 	OLED_Write_Cmd(0xa4);// Disable Entire Display On (0xa4/0xa5)
-	OLED_Write_Cmd(0xa6);// Disable Inverse Display On (0xa6/a7)
+	OLED_Write_Cmd(0xa6);// Disable Inverse Display On (0xa6写地址/a7)
 	OLED_Write_Cmd(0xaf);//–turn on OLED panel开启显示
 	delay_ms(100);
 
@@ -154,8 +154,6 @@ void OLED_Show_English(unsigned char x,unsigned char y,unsigned char arr[][16],u
    *@param x -> colum(0~7); y ->page(0~3);arr -> 传入的中文库名; length -> 库中前n位中文
    *@retval
    */
-
-
 
 void OLED_Show_Chinese(unsigned char x,unsigned char y,const unsigned char arr[][32],unsigned char length){
 	unsigned char i,j;

@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\USER;..\FWLIB\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\OLED;..\HARDWARE\IIC;..\U8G2;..\HARDWARE\Zigbee;..\HARDWARE\LED;..\HARDWARE\BEEP;..\HARDWARE\TIMER</IncludePath>
+              <IncludePath>..\CORE;..\USER;..\FWLIB\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\OLED;..\HARDWARE\IIC;..\U8G2;..\HARDWARE\Zigbee;..\HARDWARE\LED;..\HARDWARE\BEEP;..\HARDWARE\TIMER;..\HARDWARE\24C02</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -483,6 +483,11 @@
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_usart.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_tim.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -537,6 +542,11 @@
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\TIMER\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>24Cxx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\24C02\24Cxx.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -71,13 +71,16 @@ void deleteNodeByLongAddr(Device* headNode, u8* LongAddr) {
 	free(posNode);
 }
 
-u8 checkByLongAddr(Device* headNode, u8* LongAddr) {
+u8 checkByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
 	Device* posNode = headNode->next;
 	while (AddrCmp(8,posNode->LongAddr, LongAddr) == 0){
 		if(posNode->next == NULL) return 0;//没有查到该长地址的设备
 		posNode = posNode->next;
 	}
+	//找到了,标志入网，更新短地址
 	posNode->OnlineFlag = 1;
+	posNode->ShortAddr[0] = ShortAddr[0];
+	posNode->ShortAddr[1] = ShortAddr[1];
 	return 1;//查到了该长地址的设备
 }
 

@@ -184,8 +184,9 @@ void USART1_IRQHandler(void)
 			else{
 				//接收错误,重新开始
 				USART1_RX_STA=0;
-				USART1_RX_BUF[0] = 0;
 				USART1_RX_BUF[1] = 0;
+				USART1_RX_BUF[2] = 0;
+				USART1_RX_BUF[3] = 0;
 				USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
 				USART1_RX_STA++;//数据长度++
 			}
