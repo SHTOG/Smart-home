@@ -10,7 +10,7 @@ int main(void) {
 	delay_init(168);    //初始化延时函数 
 	OLED_Init();
 	LED_Init();			//初始化LEDio口
-	BEEP_Init();
+	BEEP_Init();		//初始化蜂鸣器（测试用）
 	Zigbee_Init(115200);
 	TIM3_PWM_Init(500-1,84-1);//84M/84=1Mhz的计数频率,重装载值500，所以PWM频率为 1M/500=2Khz.(周期为500us)
 	while (1){
