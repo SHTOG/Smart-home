@@ -1,9 +1,6 @@
 #include "AnalyseAndSend.h"
 
-/*Begin of extern*/
-extern Device* DeviceList;
-extern u8 SelfLongAddr[8];
-/*End of extern*/
+u8 BootedTimeFlag = 0;//开机时长记录flag,开机满10分钟就置1
 
 void Analyse_Custom_Data(){
 	u8 DeviceLongAddr[8];
@@ -20,7 +17,7 @@ void Analyse_Custom_Data(){
 		DeviceShortAddr[0] = USART1_RX_BUF[15];
 		DeviceShortAddr[1] = USART1_RX_BUF[16];
 		if(checkByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
-			insertNodeByType(DeviceList,type,DeviceLongAddr,DeviceShortAddr);
+			insertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
 		}
 
 	}

@@ -15,9 +15,10 @@ u8 AddrCmp(u8 n, u8* dest, u8*src){
 	return 1;
 }
 
-Device* createNode(u8 type, u8* LongAddr, u8* ShortAddr) {
+Device* createNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
 	Device* newNode = (Device*)malloc(sizeof(Device));
 	newNode->type = type;
+	newNode->onlineFlag = onlineFlag;
 	AddrCpy(8,newNode->LongAddr, LongAddr);//注意！！要用strcpy
 	AddrCpy(2,newNode->ShortAddr, ShortAddr);//注意！！要用strcpy
 	newNode->next = NULL;
@@ -32,15 +33,14 @@ Device* createList(void) {
 	return headNode;
 }
 
-void insertNodeByType(Device* headNode, u8 type, u8* LongAddr, u8* ShortAddr) {
+void insertNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
 	Device* posNode = headNode;
 	Device* posNodeFront;
 	while (posNode->type <= type && posNode->next != NULL) {
 		posNodeFront = posNode;
 		posNode = posNode->next;
 	}//定位在type为指定数字或的最后一个
-	Device* newNode = createNode(type, LongAddr, ShortAddr);
-	newNode->OnlineFlag = 1;
+	Device* newNode = createNode(type,onlineFlag, LongAddr, ShortAddr);
 	if(posNode->type > type){//如果不是最后一个
 		posNodeFront->next = newNode;
 		newNode->next = posNode;
@@ -67,11 +67,12 @@ u8 checkByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
 		posNode = posNode->next;
 	}
 	//找到了,标志入网，更新短地址
-	posNode->OnlineFlag = 1;
+	posNode->onlineFlag = 1;
 	posNode->ShortAddr[0] = ShortAddr[0];
 	posNode->ShortAddr[1] = ShortAddr[1];
 	return 1;//查到了该长地址的设备
 }
+
 
 void printList(Device* headNode) {
 	Device* pMove = headNode->next;
