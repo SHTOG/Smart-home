@@ -34,15 +34,32 @@ void TIM3_Int_Init(u16 arr,u16 psc){
 }
 
 //定时器3中断服务函数
-//每秒触发一次中断
+//主要记录程序运行时长
+//每毫秒触发一次中断
 void TIM3_IRQHandler(void){
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET){ //溢出中断
-		static u8 counter = 0;
-		counter++;
-		LED1 = !LED1;
-		if(counter == 64){//每秒向云端发送入网设备信息
-//			printList(DeviceList);
-			counter = 0;
+		static u16 MilliSecond = 0;//毫秒级计数器
+		static u8 Second = 0;//秒级计数器
+		static u8 HalfSecond = 0;
+		static u8 Minute = 0;//分级计数器
+		MilliSecond++;
+		if(MilliSecond == 1000){
+			Second++;//秒数增加
+			HalfSecond++;
+			LED1 = !LED1;
+			if(Second == 64){
+				Minute++;
+				if(Minute == 10){
+					BootedTimeFlag = 1;
+				}
+				Second = 0;
+			}
+			MilliSecond = 0;
+		}
+		if(BootedTimeFlag == 0 && HalfSecond == 30){
+			//每30秒向APP发送链表内容
+			
+			HalfSecond = 0;
 		}
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
 	}
