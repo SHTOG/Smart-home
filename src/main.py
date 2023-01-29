@@ -1,27 +1,14 @@
 # -*-coding:utf-8-*-
 import time
 from machine import Pin
-import ubinascii
-import machine
 import network
 from umqtt import MQTTClient
+from config import *
 
 
 # ESP8266 ESP-12 modules have blue, active-low LED on GPIO2, replace
 # with something else if needed.
 led = Pin(13, Pin.OUT, value=1)
-
-# WiFi
-# WiFi
-SSID = "xxxxxx"
-PASSWORD = "xxxxxx"
-
-# Default MQTT server to connect to
-username = "ESP32-C3-username"
-password = "ESP32-C3-password"
-SERVER = "192.168.10.174"
-CLIENT_ID = ubinascii.hexlify(machine.unique_id())
-TOPIC = b"TestTopic"
 
 
 def connect_wifi(ssid, passwd):
@@ -74,11 +61,20 @@ try:
     c.subscribe(TOPIC)  # client subscribes to a topic
 
     print("Connected to %s, subscribed to %s topic" % (server, TOPIC))
+    # print(f"Connected to {server}, subscribed to {TOPIC} topic") # mPy不支持
 
     while True:
-        c.wait_msg()  # wait message
+        try:
+            c.wait_msg()  # wait message
+        except (OSError, ConnectionError) as e:
+            if e.args[0] == 110:
+                c.connect()  # reconnect
+                c.subscribe(TOPIC)
+            else:
+                raise
+
 finally:
-    # if (c is not None):
-    #     c.disconnect()
+    if (c is not None):
+        c.disconnect()
     wlan.disconnect()
     wlan.active(False)

@@ -141,6 +141,17 @@ class MQTTClient:
                     rcv_pid = rcv_pid[0] << 8 | rcv_pid[1]
                     if pid == rcv_pid:
                         return
+            '''
+            ChatGPT:
+            这段代码是涉及到MQTT协议的实现，在这里需要对接收到的数据进行判断和处理。具体来说：
+            首先，这段代码是在一个无限循环中执行的，也就是说在接收到数据之前会不断地进行等待。
+            每当接收到一个数据包时，会执行op = self.wait_msg()这一行，这个方法返回的是这个数据包的操作码（opcode）。
+            接着，会判断操作码是否为0x40，这个操作码是MQTT协议中定义的，表示这是一个PUBACK报文，表示QoS1级别的消息已经被确认。
+            接下来的代码中，会读取接收到的数据中的前三个字节，其中第一个字节应该是0x02，表示这是一个有两个字节的整数。
+            然后，会读取这两个字节，将它们组合成一个整数，并将这个整数赋值给rcv_pid。
+            最后，判断pid和rcv_pid是否相等，如果相等，就会返回，结束这个while循环。
+            这段代码的作用是确认接收到的数据是否是我们想要的，并且结束相应的连接。
+            '''
         elif qos == 2:
             assert 0
 
@@ -162,6 +173,14 @@ class MQTTClient:
                 if resp[3] == 0x80:
                     raise MQTTException(resp[3])
                 return
+        '''
+        ChatGPT:
+        这一段代码是在等待服务器的响应并进行判断。具体来说：
+        首先会进入一个无限循环，在循环中调用 self.wait_msg() 方法等待消息（一般是服务器的响应）
+        当收到的消息的 op 值为 0x90 时，表示收到了服务器的响应
+        接着，会读取4个字节的响应数据，并判断响应数据中的第2个和第3个字节是否与发出请求时的数据中的第2个和第3个字节相同，用来确认响应是否与请求对应。
+        然后根据响应数据中的第4个字节来判断是否成功。如果为0x80，则会抛出一个 MQTTException 异常，表示请求失败。如果没有异常，说明请求成功，返回。
+        '''
 
     # Wait for a single incoming MQTT message and process it.
     # Subscribed messages are delivered to a callback previously
