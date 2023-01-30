@@ -4,13 +4,8 @@ OBJ
 # Created by https://www.gitignore.io/api/python,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=python,visualstudiocode
 
-### mPy ###
-mPy-ESP32/src/secret.py
-mPy-ESP32/.micropy
-mPy-ESP32/.vscode
-
 ### VisualStudioCode ###
-.vscode/*
+.vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
