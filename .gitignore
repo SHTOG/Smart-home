@@ -3,8 +3,8 @@
 #VSCode
 
 #MDK#
-OBJ/*
-OBJ
+STM32F4-Terminal_Led/OBJ/*
+STM32F4-Terminal_Led/OBJ/*
 #MDK#
 
 #Git#
