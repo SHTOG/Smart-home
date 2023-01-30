@@ -13,41 +13,48 @@
 //#include "u8x8.h"
 //#include "u8g2.h"
 
-/*Begin of È«¾Ö±äÁ¿*/
-u8 ReadFlag = 0;//×´Ì¬¶ÁÈ¡³É¹¦±êÖ¾Î»
-Device* DeviceList;//Éè±¸³¤¶ÌµØÖ·Êı¾İ¿â
-/*End of È«¾Ö±äÁ¿*/
+/*Begin of å…¨å±€å˜é‡*/
+u8 ReadFlag = 0;//çŠ¶æ€è¯»å–æˆåŠŸæ ‡å¿—ä½
+Device* DeviceList;//è®¾å¤‡é•¿çŸ­åœ°å€æ•°æ®åº“
+/*End of å…¨å±€å˜é‡*/
 
-/*Begin of º¯ÊıÉùÃ÷*/
-//uint8_t u8x8_gpio_and_delay(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);//u8g2»Øµ÷º¯ÊıÉùÃ÷
-/*End of º¯ÊıÉùÃ÷*/
+/*Begin of å‡½æ•°å£°æ˜*/
+//uint8_t u8x8_gpio_and_delay(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);//u8g2å›è°ƒå‡½æ•°å£°æ˜
+/*End of å‡½æ•°å£°æ˜*/
 
 
 int main(void) {
-  	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//ÉèÖÃÏµÍ³ÖĞ¶ÏÓÅÏÈ¼¶·Ö×é2
-	delay_init(168);    //³õÊ¼»¯ÑÓÊ±º¯Êı 
+  	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//è®¾ç½®ç³»ç»Ÿä¸­æ–­ä¼˜å…ˆçº§åˆ†ç»„2
+	delay_init(168);    //åˆå§‹åŒ–å»¶æ—¶å‡½æ•° 
+	OLED_Init();		//åˆå§‹åŒ–OLED
+	OLED_Show_Chinese(2,1,welcome_C,5);//ç³»ç»Ÿå¼€æœºæ˜¾ç¤ºæ¬¢è¿ç•Œé¢ï¼Œç•Œé¢æ¶ˆå¤±è¡¨ç¤ºæˆåŠŸè¿›å…¥ç³»ç»Ÿ
+	LED_Init();			//åˆå§‹åŒ–ä¸­æ§æŒ‡ç¤ºç¯å‡½æ•°
 	Zigbee_Init(115200);	
-	OLED_Init();		//³õÊ¼»¯OLED
-	OLED_Show_Chinese(2,1,welcome_C,5);//ÏµÍ³¿ª»úÏÔÊ¾»¶Ó­½çÃæ£¬½çÃæÏûÊ§±íÊ¾³É¹¦½øÈëÏµÍ³
-	LED_Init();			//³õÊ¼»¯ÖĞ¿ØÖ¸Ê¾µÆº¯Êı
-	BEEP_Init();		//³õÊ¼»¯ÖĞ¿Ø·äÃùÆ÷º¯Êı
-	DeviceList = AT24CXX_Load_List(0);//´Ó24CxxµÄÊ×µØÖ·¿ªÊ¼¶ÁÈ¡Á´±í£¬Èç¹û24CxxÃ»Ğ´¹ıÁ´±í¾ÍÖ»ÊÇµ÷ÓÃÁËcreateList
+	BEEP_Init();		//åˆå§‹åŒ–ä¸­æ§èœ‚é¸£å™¨å‡½æ•°
+	AT24CXX_Init();
 	USART2_Init(115200);
-	TIM3_Int_Init(10-1,8400-1);//¶¨Ê±Æ÷Ê±ÖÓ84M£¬·ÖÆµÏµÊı8400£¬ËùÒÔ84M/8400=10KhzµÄ¼ÆÊıÆµÂÊ£¬¼ÆÊı10´ÎÎª1ms     
+	TIM3_Int_Init(10-1,8400-1);//å®šæ—¶å™¨æ—¶é’Ÿ84Mï¼Œåˆ†é¢‘ç³»æ•°8400ï¼Œæ‰€ä»¥84M/8400=10Khzçš„è®¡æ•°é¢‘ç‡ï¼Œè®¡æ•°10æ¬¡ä¸º1ms     
+	while(AT24CXX_Check()){
+		LED_Test(GPIOF,GPIO_Pin_9,200);
+	}
+	DeviceList = AT24CXX_Load_List(0);//ä»24Cxxçš„é¦–åœ°å€å¼€å§‹è¯»å–é“¾è¡¨ï¼Œå¦‚æœ24Cxxæ²¡å†™è¿‡é“¾è¡¨å°±åªæ˜¯è°ƒç”¨äº†createList
 	OLED_Clear();
+/*  æµ‹è¯•ç”¨
+	DeviceList = createList();//è°ƒç”¨createList
 	u8 ladd[] = {1,1,1,1,1,1,1,1};
 	u8 sadd3[] = {3,3};
 	u8 sadd2[] = {2,2};
 	u8 sadd1[] = {1,1};
 	u8 sadd4[] = {4,4};
-		insertNodeByType(DeviceList,03,1,ladd,sadd1);
-		insertNodeByType(DeviceList,01,1,ladd,sadd2);
-		insertNodeByType(DeviceList,03,1,ladd,sadd3);
-		insertNodeByType(DeviceList,04,1,ladd,sadd4);
+	insertNodeByType(DeviceList,03,1,ladd,sadd1);
+	insertNodeByType(DeviceList,01,1,ladd,sadd2);
+	insertNodeByType(DeviceList,03,1,ladd,sadd3);
+	insertNodeByType(DeviceList,04,1,ladd,sadd4);
+*/
 	while (1){
-		LED_Test(GPIOF,GPIO_Pin_9,400);
-		printList(DeviceList);
-		delay_ms(5000);
+		LED1 = !LED1;
+		printList(DeviceList);//æµ‹è¯•ä¸‹è¾“å‡º
+		delay_ms(2333);
   	}
 
 }

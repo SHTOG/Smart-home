@@ -61,11 +61,12 @@ u8 Zigbee_Change_Mode(u8 modeNum){
 	u8 i;
 	if(modeNum == 0){
 		while(1){
-			delay_ms(100);
+			delay_ms(10);
 			for(i = 0; i < 3;i++){
 				USART_SendData(USART1, EnterMode0[i]);         //向串口1发送数据
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 			}
+			delay_ms(50);
 			if(USART1_RX_BUF[1] == 0x03 && USART1_RX_BUF[2] == 0xFF && USART1_RX_BUF[3] == 0xFE && USART1_RX_BUF[4] == 0x01){//55 03 FF FE 01
 				return 0;
 			}
@@ -74,6 +75,7 @@ u8 Zigbee_Change_Mode(u8 modeNum){
 	else if(modeNum == 1){
 		//进入透传模式
 		while(1){
+			delay_ms(100);
 			for(i = 0; i < 9;i++){
 				USART_SendData(USART1, EnterMode1[i]);         //向串口1发送数据
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束

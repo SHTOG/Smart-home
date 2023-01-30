@@ -78,7 +78,6 @@ void printList(Device* headNode) {
 	Device* pMove = headNode->next;
 	while (pMove != NULL) {
 		//µ÷ÊÔÓÃ
-		Send_Custom_Data(USART2,pMove->type,8,pMove->LongAddr);
 		Send_Custom_Data(USART2,pMove->type,2,pMove->ShortAddr);
 		pMove = pMove->next;
 	}
