@@ -5,6 +5,7 @@ import network
 from umqtt import MQTTClient
 from config import *
 
+ConnectionError = OSError
 
 # ESP8266 ESP-12 modules have blue, active-low LED on GPIO2, replace
 # with something else if needed.
@@ -54,27 +55,28 @@ def sub_cb(topic, msg):
 try:
     connect_wifi(SSID, PASSWORD)
     server = SERVER
-    c = MQTTClient(CLIENT_ID, server, 0, username, password,
-                   keepalive=30, ssl=False, ssl_params={})  # create a mqtt client
-    c.set_callback(sub_cb)  # set callback
-    c.connect()  # connect mqtt
-    c.subscribe(TOPIC)  # client subscribes to a topic
-
+    client = MQTTClient(CLIENT_ID, server, 0, username, password,
+                        keepalive=30, ssl=False, ssl_params={})  # create a mqtt client
+    client.set_callback(sub_cb)  # set callback
+    client.connect()  # connect mqtt
+    client.subscribe(TOPIC)  # client subscribes to a topic
+    client.publish(TOPIC, "Hi")  # client publish to a topic
     print("Connected to %s, subscribed to %s topic" % (server, TOPIC))
     # print(f"Connected to {server}, subscribed to {TOPIC} topic") # mPy不支持
 
     while True:
         try:
-            c.wait_msg()  # wait message
+            client.wait_msg()  # wait message
         except (OSError, ConnectionError) as e:
-            if e.args[0] == 110:
-                c.connect()  # reconnect
-                c.subscribe(TOPIC)
+            if e.args[0] == 104 or e.args[0] == -1:
+                time.sleep(3)
+                print("Connection break! Reconnecting...")
+                client.connect()  # reconnect
+                client.subscribe(TOPIC)
             else:
                 raise
-
 finally:
-    if (c is not None):
-        c.disconnect()
+    # if (c is not None):
+    #     c.disconnect()
     wlan.disconnect()
     wlan.active(False)

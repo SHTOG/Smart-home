@@ -37,4 +37,3 @@ pass
 ## Thanks
 
 本软件的诞生离不开`ChatGPT`和其他开源软件的帮助。
->>>>>>> mPy-ESP32
