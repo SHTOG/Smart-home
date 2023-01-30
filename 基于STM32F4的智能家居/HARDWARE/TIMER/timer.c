@@ -46,7 +46,7 @@ void TIM3_IRQHandler(void){
 		if(MilliSecond == 1000){
 			Second++;//秒数增加
 			HalfSecond++;
-			LED1 = !LED1;
+			LED2 = !LED2;
 			if(Second == 64){
 				Minute++;
 				if(Minute == 10){
@@ -57,8 +57,8 @@ void TIM3_IRQHandler(void){
 			MilliSecond = 0;
 		}
 		if(BootedTimeFlag == 0 && HalfSecond == 30){
-			//每30秒向APP发送链表内容
-			
+			//每30秒向APP发送链表内容并将链表存入EEPROM
+			AT24CXX_Save_List(0,DeviceList);
 			HalfSecond = 0;
 		}
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位

@@ -162,7 +162,6 @@ void AT24CXX_Save_List(u16 WriteAddr,Device* headNode){
 	AT24CXX_WriteOneByte(EE_TYPE-1,0X66);//24Cxx设备的在倒数第二位写66，表示已经保存过链表
 	while(posNode != NULL){
 		AT24CXX_WriteOneByte(WriteAddr++,posNode->type);
-		AT24CXX_WriteOneByte(WriteAddr++,0);//这里应该对应onlineFlag
 		for(i = 0; i < 8; i++){
 			AT24CXX_WriteOneByte(WriteAddr++,posNode->LongAddr[i]);
 		}
@@ -195,7 +194,7 @@ Device* AT24CXX_Load_List(u16 ReadAddr){
 			LongAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
 		}
 		for(i = 0; i < 2; i++){
-			LongAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
+			ShortAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
 		}
 		insertNodeByType(newList, type,0, LongAddr, ShortAddr);
 	}

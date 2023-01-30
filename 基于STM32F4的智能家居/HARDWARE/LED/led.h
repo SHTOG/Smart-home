@@ -1,10 +1,11 @@
 #ifndef __LED_H 
 #define __LED_H 
 #include "sys.h" 
-//LED ¶Ë¿Ú¶¨Òå Õâ¶Î´úÂëÀïÃæ×î¹Ø¼ü¾ÍÊÇ 2 ¸öºê¶¨Òå£º
+#include "delay.h"
 #define LED0 PFout(9)  // DS0 
-#define LED1 PFout(10)// DS1    
+#define LED1 PFout(10)// DS1 
+#define LED2 PAout(6)// æµ‹è¯•ç”¨å¤–æ¥led
  
-void LED_Init(void);//³õÊ¼»¯
-void LED_Test(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin,u16 xms);//Á÷Ë®µÆ
+void LED_Init(void);//åˆå§‹åŒ–
+void LED_Test(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin,u16 xms);//æµæ°´ç¯
 #endif 
