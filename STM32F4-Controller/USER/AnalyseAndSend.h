@@ -4,11 +4,13 @@
 #include "delay.h"
 #include "usart.h"
 #include "myList.h"
+#include "24Cxx.h"
 
 /*Begin of extern*/
 extern struct myDevice* DeviceList;
 extern u8 SelfLongAddr[8];
 extern u8 BootedTimeFlag;
+
 /*End of extern*/
 
 void Analyse_Custom_Data(void);

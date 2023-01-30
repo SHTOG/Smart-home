@@ -4,7 +4,6 @@
 #include "sys.h"
 #include "string.h"
 #include "stdlib.h"
-#include "AnalyseAndSend.h"
 
 typedef struct myDevice{
     //Êý¾ÝÓò

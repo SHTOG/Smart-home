@@ -46,7 +46,7 @@ void TIM3_IRQHandler(void){
 		if(MilliSecond == 1000){
 			Second++;//ÃëÊıÔö¼Ó
 			HalfSecond++;
-			LED2 = !LED2;
+			
 			if(Second == 64){
 				Minute++;
 				if(Minute == 10){
