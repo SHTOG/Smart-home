@@ -1,6 +1,13 @@
-基于STM32F4的zigbee终端_电灯/*.code-workspace
-基于STM32F4的智能家居/*.code-workspace
+.code-workspace
 OBJ
+
+# Created by https://www.gitignore.io/api/python,visualstudiocode
+# Edit at https://www.gitignore.io/?templates=python,visualstudiocode
+
+### mPy ###
+mPy-ESP32/src/secret.py
+mPy-ESP32/.micropy
+mPy-ESP32/.vscode
 
 ### VisualStudioCode ###
 .vscode/*
@@ -14,3 +21,8 @@ OBJ
 .history
 
 # End of https://www.gitignore.io/api/python,visualstudiocode
+
+### Micropy Cli ###
+.micropy/
+!micropy.json
+!src/lib
