@@ -186,7 +186,7 @@ Device* AT24CXX_Load_List(u16 ReadAddr){
 	u8 type,i;
 	u8 LongAddr[8];
 	u8 ShortAddr[2];
-	Device* newList = createList();
+	Device* newList = CreateList();
 	if(AT24CXX_ReadOneByte(EE_TYPE-1) == 0x66){//如果曾写过链表,则读取，否则就只是创建了一个新的链表
 		while(AT24CXX_ReadOneByte(ReadAddr) != 0xFF){
 		type = AT24CXX_ReadOneByte(ReadAddr++);
@@ -196,7 +196,7 @@ Device* AT24CXX_Load_List(u16 ReadAddr){
 		for(i = 0; i < 2; i++){
 			ShortAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
 		}
-		insertNodeByType(newList, type,0, LongAddr, ShortAddr);
+		InsertNodeByType(newList, type,0, LongAddr, ShortAddr);
 	}
 	}
 	return newList;
