@@ -17,10 +17,10 @@ typedef struct myDevice{
 
 extern Device* DeviceList;
 
-Device* createList(void);
-Device* createNode(u8 type, u8 onlineFlag, u8* LongAddr,u8* ShortAddr) ;
-void insertNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr,u8* ShortAddr);
-void deleteNodeByLongAddr(Device* headNode, u8* LongAddr);
-u8 checkByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr);
-void printList(Device* headNode);
+Device* CreateList(void);
+Device* CreateNode(u8 type, u8 onlineFlag, u8* LongAddr,u8* ShortAddr) ;
+void InsertNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr,u8* ShortAddr);
+void DeleteNodeByLongAddr(Device* headNode, u8* LongAddr);
+u8 CheckByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr);
+u8 CheckByOnlineFlag(Device* headNode);
 #endif  

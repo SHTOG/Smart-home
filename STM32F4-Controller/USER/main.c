@@ -27,7 +27,9 @@ Device* DeviceList;//设备长短地址数据链表
 void printList(Device* headNode) {
 	Device* pMove = headNode->next;
 	while (pMove != NULL) {
-		Send_Custom_Data(USART2,pMove->type,2,pMove->ShortAddr);
+		if(pMove->onlineFlag == 1){
+			Send_Custom_Data(USART2,pMove->type,2,pMove->ShortAddr);
+		}
 		pMove = pMove->next;
 	}
 }
@@ -44,28 +46,29 @@ int main(void) {
 	AT24CXX_Init();
 	USART2_Init(115200);
 	TIM3_Int_Init(10-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10次为1ms     
+	TIM2_Int_Init(10000-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10000次为1s     
 	while(AT24CXX_Check()){
 		LED_Test(GPIOF,GPIO_Pin_9,200);
 	}
-	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了createList
+	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateList
 	OLED_Clear();
 /*  测试用 */
-//	DeviceList = createList();//调用createList
+//	DeviceList = CreateList();//调用CreateList
 //	u8 ladd[] = {1,1,1,1,1,1,1,1};
 //	u8 sadd3[] = {3,3};
 //	u8 sadd2[] = {2,2};
 //	u8 sadd1[] = {1,1};
 //	u8 sadd4[] = {4,4};
-//	insertNodeByType(DeviceList,03,1,ladd,sadd1);
-//	insertNodeByType(DeviceList,01,1,ladd,sadd2);
-//	insertNodeByType(DeviceList,03,1,ladd,sadd3);
-//	insertNodeByType(DeviceList,04,1,ladd,sadd4);
+//	InsertNodeByType(DeviceList,03,1,ladd,sadd1);
+//	InsertNodeByType(DeviceList,01,1,ladd,sadd2);
+//	InsertNodeByType(DeviceList,03,1,ladd,sadd3);
+//	InsertNodeByType(DeviceList,04,1,ladd,sadd4);
 /*  测试用 */
 	while (1){
 		LED1 = !LED1;
 //		AT24CXX_Save_List(0,DeviceList);
 //		DeviceList = AT24CXX_Load_List(0);
-		printList(DeviceList);//测试下输�?
+		printList(DeviceList);//测试下输出
 		delay_ms(2333);
   	}
 

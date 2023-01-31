@@ -15,7 +15,7 @@ u8 AddrCmp(u8 n, u8* dest, u8*src){
 	return 1;
 }
 
-Device* createNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
+Device* CreateNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
 	Device* newNode = (Device*)malloc(sizeof(Device));
 	newNode->type = type;
 	newNode->onlineFlag = onlineFlag;
@@ -25,7 +25,7 @@ Device* createNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
 	return newNode;
 }
 
-Device* createList(void) {
+Device* CreateList(void) {
 	//创建表头
 	Device* headNode = (Device*)malloc(sizeof(Device));//指针变成了结构体变量
 	headNode->type = 0;
@@ -33,14 +33,14 @@ Device* createList(void) {
 	return headNode;
 }
 
-void insertNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
+void InsertNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
 	Device* posNode = headNode;
 	Device* posNodeFront;
 	while (posNode->type <= type && posNode->next != NULL) {
 		posNodeFront = posNode;
 		posNode = posNode->next;
 	}//定位在type为指定数字或的最后一个
-	Device* newNode = createNode(type,onlineFlag, LongAddr, ShortAddr);
+	Device* newNode = CreateNode(type,onlineFlag, LongAddr, ShortAddr);
 	if(posNode->type > type){//如果不是最后一个
 		posNodeFront->next = newNode;
 		newNode->next = posNode;
@@ -49,7 +49,7 @@ void insertNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr, u8
 	}
 }
 
-void deleteNodeByLongAddr(Device* headNode, u8* LongAddr) {
+void DeleteNodeByLongAddr(Device* headNode, u8* LongAddr) {
 	Device* posNode = headNode->next;
 	Device* posNodeFront = headNode;
 	while (AddrCmp(8,posNode->LongAddr, LongAddr) != 0) {
@@ -60,7 +60,7 @@ void deleteNodeByLongAddr(Device* headNode, u8* LongAddr) {
 	free(posNode);
 }
 
-u8 checkByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
+u8 CheckByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
 	Device* posNode = headNode->next;
 	while (AddrCmp(8,posNode->LongAddr, LongAddr) == 0){
 		if(posNode->next == NULL) return 0;//没有查到该长地址的设备
@@ -71,6 +71,26 @@ u8 checkByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
 	posNode->ShortAddr[0] = ShortAddr[0];
 	posNode->ShortAddr[1] = ShortAddr[1];
 	return 1;//查到了该长地址的设备
+}
+
+/**
+  * @brief		查找链表中是否有未联网设备
+  * @param		Device* headNode：链表表头
+  * @retval	    1->有未联网设备
+  * @retval	    0->无未联网设备
+  */
+
+u8 CheckByOnlineFlag(Device* headNode) {
+	Device* posNode = headNode;
+	while (posNode->next != NULL){
+		if(posNode->type == 0) posNode = posNode->next;
+		else{
+			if(posNode->onlineFlag == 0){
+				return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 
