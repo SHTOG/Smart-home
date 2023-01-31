@@ -15,28 +15,29 @@
 
 /*Begin of 全局变量*/
 u8 ReadFlag = 0;//状态读取成功标志位
-Device* DeviceList;//设备长短地址数据库
+Device* DeviceList;//设备长短地址数据链表
 /*End of 全局变量*/
 
 /*Begin of 函数声明*/
 //uint8_t u8x8_gpio_and_delay(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);//u8g2回调函数声明
 /*End of 函数声明*/
 
+
+/*  测试用 */
 void printList(Device* headNode) {
 	Device* pMove = headNode->next;
 	while (pMove != NULL) {
-		//调试用
 		Send_Custom_Data(USART2,pMove->type,2,pMove->ShortAddr);
 		pMove = pMove->next;
 	}
 }
-
+/*  测试用 */
 
 int main(void) {
-  	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
+  	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分为2
 	delay_init(168);    //初始化延时函数 
 	OLED_Init();		//初始化OLED
-	OLED_Show_Chinese(2,1,welcome_C,5);//系统开机显示欢迎界面，界面消失表示成功进入系统
+	OLED_Show_Chinese(2,1,welcome_C,5);//系统开机显示始迎界面，界面消失表示成功进入系统
 	LED_Init();			//初始化中控指示灯函数
 	Zigbee_Init(115200);	
 	BEEP_Init();		//初始化中控蜂鸣器函数
@@ -46,7 +47,7 @@ int main(void) {
 	while(AT24CXX_Check()){
 		LED_Test(GPIOF,GPIO_Pin_9,200);
 	}
-	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就只是调用了createList
+	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了createList
 	OLED_Clear();
 /*  测试用 */
 //	DeviceList = createList();//调用createList
@@ -64,7 +65,7 @@ int main(void) {
 		LED1 = !LED1;
 //		AT24CXX_Save_List(0,DeviceList);
 //		DeviceList = AT24CXX_Load_List(0);
-		printList(DeviceList);//测试下输出
+		printList(DeviceList);//测试下输�?
 		delay_ms(2333);
   	}
 
