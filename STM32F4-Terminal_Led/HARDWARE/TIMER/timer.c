@@ -46,7 +46,7 @@ void TIM3_IRQHandler(void){
 
 /**
 
-  * @brief    通用定时器3输出PWM初始化(PF0)
+  * @brief    通用定时器3输出PWM初始化(PA6)
   * @param    arr->自动重装值；psc->时钟预分频数
   * @retval   void
   */
@@ -60,12 +60,12 @@ void TIM3_PWM_Init(u32 arr,u32 psc){
 	
 	GPIO_PinAFConfig(GPIOA,GPIO_PinSource6,GPIO_AF_TIM3); //GPIOA6 复用为定时器3
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;           //GPIOF9
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;           //GPIOA6
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;        //复用功能
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//速度100MHz
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;      //推挽复用输出
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //上拉
-	GPIO_Init(GPIOA,&GPIO_InitStructure);              //初始化PF9
+	GPIO_Init(GPIOA,&GPIO_InitStructure);              //初始化PA6
 
 	TIM_TimeBaseStructure.TIM_Prescaler=psc;  //定时器分频
 	TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up; //向上计数模式
