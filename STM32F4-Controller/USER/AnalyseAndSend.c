@@ -16,8 +16,8 @@ void Analyse_Custom_Data(){
 		type = USART1_RX_BUF[14];
 		DeviceShortAddr[0] = USART1_RX_BUF[15];
 		DeviceShortAddr[1] = USART1_RX_BUF[16];
-		if(checkByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
-			insertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
+		if(CheckByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
+			InsertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
 			//这里留个位置给《链表发送到APP端》
 			if(BootedTimeFlag == 1){
 				AT24CXX_Save_List(0,DeviceList);
