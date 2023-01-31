@@ -17,6 +17,7 @@
 extern u8 SelfLongAddr[8];
 extern u8 SelfShortAddr[2];
 extern u8 NetFlag;
+extern u8 EnterModeFlag;
 /*End of extern*/
 
 void Zigbee_Init(u32 bound);

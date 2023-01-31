@@ -2,46 +2,47 @@
 
 
 
-/*Begin of È«¾Ö±äÁ¿*/
-u8 SelfShortAddr[] = {0xFF,0xFF};//Éè±¸¶ÌµØÖ·:Ğ­µ÷Æ÷³õÊ¼FFFF£¬ÆäËû³õÊ¼0000
-u8 SelfLongAddr[8] = {0x70, 0xE4, 0x61, 0x25, 0x00, 0x4B, 0x12, 0x00};//Ö¸¶¨Ğ­µ÷Æ÷µÄ³¤µØÖ·
+/*Begin of å…¨å±€å˜é‡*/
+u8 SelfShortAddr[] = {0xFF,0xFF};//è®¾å¤‡çŸ­åœ°å€:åè°ƒå™¨åˆå§‹FFFFï¼Œå…¶ä»–åˆå§‹0000
+u8 SelfLongAddr[8] = {0x70, 0xE4, 0x61, 0x25, 0x00, 0x4B, 0x12, 0x00};//æŒ‡å®šåè°ƒå™¨çš„é•¿åœ°å€
 u8 NetFlag = 0;
-/*End of È«¾Ö±äÁ¿*/
+u8 EnterModeFlag;//è¿›å…¥é€ä¼ æ¨¡å¼æ ‡å¿—ä½ï¼Œç½®ä¸€è¡¨ç¤ºè¿›å…¥æˆåŠŸ
+/*End of å…¨å±€å˜é‡*/
 
 /**
-  * @brief		³õÊ¼»¯ÓëZigbeeÏàÁ¬µÄ´®¿Ú²¢³õÊ¼»¯ZigebeeÉèÖÃ£¬Ö÷ÒªÊÇ±£Ö¤ZigbeeÊÇÓĞÍøµÄ×´Ì¬²¢ÇÒ½øÈë´«ÊäÄ£Ê½
-  * @param		bound(²¨ÌØÂÊ)->ÓëZigbeeÄ£¿éµÄ²¨ÌØÂÊ±£³ÖÒ»ÖÂ
+  * @brief		åˆå§‹åŒ–ä¸Zigbeeç›¸è¿çš„ä¸²å£å¹¶åˆå§‹åŒ–Zigebeeè®¾ç½®ï¼Œä¸»è¦æ˜¯ä¿è¯Zigbeeæ˜¯æœ‰ç½‘çš„çŠ¶æ€å¹¶ä¸”è¿›å…¥ä¼ è¾“æ¨¡å¼
+  * @param		bound(æ³¢ç‰¹ç‡)->ä¸Zigbeeæ¨¡å—çš„æ³¢ç‰¹ç‡ä¿æŒä¸€è‡´
   * @retval	void
   */
 
 void Zigbee_Init(u32 bound){
-	delay_ms(5000);//µÈZigbeeÆô¶¯ÍêÈ«
-    //´®¿Ú³õÊ¼»¯
-	USART1_Init(bound);	//´®¿Ú³õÊ¼»¯²¨ÌØÂÊÎªbound£¬Ä¬ÈÏÊÇ115200ÓëZigbeeµÄ³ö³§Ä¬ÈÏÖµÍ³Ò»
-	//½øÈëÅäÖÃÄ£Ê½
+	delay_ms(5000);//ç­‰Zigbeeå¯åŠ¨å®Œå…¨
+    //ä¸²å£åˆå§‹åŒ–
+	USART1_Init(bound);	//ä¸²å£åˆå§‹åŒ–æ³¢ç‰¹ç‡ä¸ºboundï¼Œé»˜è®¤æ˜¯115200ä¸Zigbeeçš„å‡ºå‚é»˜è®¤å€¼ç»Ÿä¸€
+	//è¿›å…¥é…ç½®æ¨¡å¼
 	Zigbee_Change_Mode(0);
-	//¿ªÊ¼ÅäÍø
+	//å¼€å§‹é…ç½‘
 	OpenNet();
-	//¶ÁÈ¡Éè±¸ĞÅÏ¢
+	//è¯»å–è®¾å¤‡ä¿¡æ¯
 	Get_State();
 	PFout(9) = 0;
-	//½øÈëÍ¸´«Ä£Ê½
+	//è¿›å…¥é€ä¼ æ¨¡å¼
 	Zigbee_Change_Mode(1);
 	PFout(10) = 0;
 }
 /**
-  * @brief		´ò¿ªZigbeeÄ£¿éµÄÍøÂç£¨Ğ­µ÷Æ÷£ºÈç¹ûÎ´½¨Á¢ÍøÂç£¬Ôò½¨Á¢Ò»¸öĞÂÍøÂç£»Èç¹ûÒÑ½¨Á¢ÍøÂç£¬ÔòÔÙµ÷ÓÃ´Ëº¯ÊıÊ±Îª¿ª·ÅÍøÂç180s£¬180sÄÚÖÕ¶ËºÍÂ·ÓÉÆ÷¿É¼ÓÈë£©
+  * @brief		æ‰“å¼€Zigbeeæ¨¡å—çš„ç½‘ç»œï¼ˆåè°ƒå™¨ï¼šå¦‚æœæœªå»ºç«‹ç½‘ç»œï¼Œåˆ™å»ºç«‹ä¸€ä¸ªæ–°ç½‘ç»œï¼›å¦‚æœå·²å»ºç«‹ç½‘ç»œï¼Œåˆ™å†è°ƒç”¨æ­¤å‡½æ•°æ—¶ä¸ºå¼€æ”¾ç½‘ç»œ180sï¼Œ180så†…ç»ˆç«¯å’Œè·¯ç”±å™¨å¯åŠ å…¥ï¼‰
   * @param		void
-  * @retval		1->ÍøÂç´ò¿ª³É¹¦
+  * @retval		1->ç½‘ç»œæ‰“å¼€æˆåŠŸ
   */
 
 void OpenNet(){
-	u8 NetStart[] = {0x55, 0x04, 0x00, 0x02, 0x00, 0x02,};//¿ªÊ¼ÅäÍø:Ğ­µ÷Æ÷Ö´ĞĞ¸ÃÃüÁî»á´ò¿ªÈëÍøÔÊĞíÈ¨ÏŞ,Â·ÓÉºÍÖÕ¶Ë½ÚµãÖ´ĞĞ¸ÃÃüÁî»á³¢ÊÔ¼ÓÈëÒ»¸öĞ­µ÷Æ÷´´½¨µÄÍøÂç
+	u8 NetStart[] = {0x55, 0x04, 0x00, 0x02, 0x00, 0x02,};//å¼€å§‹é…ç½‘:åè°ƒå™¨æ‰§è¡Œè¯¥å‘½ä»¤ä¼šæ‰“å¼€å…¥ç½‘å…è®¸æƒé™,è·¯ç”±å’Œç»ˆç«¯èŠ‚ç‚¹æ‰§è¡Œè¯¥å‘½ä»¤ä¼šå°è¯•åŠ å…¥ä¸€ä¸ªåè°ƒå™¨åˆ›å»ºçš„ç½‘ç»œ
 	u8 i;
 	while(NetFlag == 0){
 		for(i = 0; i < 6;i++){
-			USART_SendData(USART1, NetStart[i]);         //Ïò´®¿Ú1·¢ËÍÊı¾İ
-			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//µÈ´ı·¢ËÍ½áÊø
+			USART_SendData(USART1, NetStart[i]);         //å‘ä¸²å£1å‘é€æ•°æ®
+			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//ç­‰å¾…å‘é€ç»“æŸ
 		}
 		delay_ms(50);
 	}
@@ -49,22 +50,22 @@ void OpenNet(){
 }
 
 /**
-  * @brief		ÇĞ»»ZigbeeÄ£Ê½
-  * @param		ModeNum -> 0Îª½øÈëHEXÖ¸ÁîÄ£Ê½£¬1Îª½øÈëÍ¸´«Ä£Ê½
-  * @retval	0Îª³É¹¦½øÈëÖ¸ÁîÄ£Ê½£¬1Îª³É¹¦½øÈëÍ¸´«Ä£Ê½
+  * @brief		åˆ‡æ¢Zigbeeæ¨¡å¼
+  * @param		ModeNum -> 0ä¸ºè¿›å…¥HEXæŒ‡ä»¤æ¨¡å¼ï¼Œ1ä¸ºè¿›å…¥é€ä¼ æ¨¡å¼
+  * @retval	0ä¸ºæˆåŠŸè¿›å…¥æŒ‡ä»¤æ¨¡å¼ï¼Œ1ä¸ºæˆåŠŸè¿›å…¥é€ä¼ æ¨¡å¼
   */
 
 
 u8 Zigbee_Change_Mode(u8 modeNum){
-	u8 EnterMode0[] = {0x2B, 0x2B, 0x2B};//ZigbeeÍ¸´«Ä£Ê½ÇĞ»»HEXÖ¸ÁîÄ£Ê½ 0ÎªHEXÖ¸ÁîÄ£Ê½
-	u8 EnterMode1[] = {0x55, 0x07, 0x00, 0x11, 0x00, 0x03, 0x00, 0x01, 0x13};//Zigbee HEXÖ¸ÁîÄ£Ê½ÇĞ»»Í¸´«Ä£Ê½ 1ÎªÊı¾İÍ¸´«Ä£Ê½
+	u8 EnterMode0[] = {0x2B, 0x2B, 0x2B};//Zigbeeé€ä¼ æ¨¡å¼åˆ‡æ¢HEXæŒ‡ä»¤æ¨¡å¼ 0ä¸ºHEXæŒ‡ä»¤æ¨¡å¼
+	u8 EnterMode1[] = {0x55, 0x07, 0x00, 0x11, 0x00, 0x03, 0x00, 0x01, 0x13};//Zigbee HEXæŒ‡ä»¤æ¨¡å¼åˆ‡æ¢é€ä¼ æ¨¡å¼ 1ä¸ºæ•°æ®é€ä¼ æ¨¡å¼
 	u8 i;
 	if(modeNum == 0){
 		while(1){
 			delay_ms(10);
 			for(i = 0; i < 3;i++){
-				USART_SendData(USART1, EnterMode0[i]);         //Ïò´®¿Ú1·¢ËÍÊı¾İ
-				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//µÈ´ı·¢ËÍ½áÊø
+				USART_SendData(USART1, EnterMode0[i]);         //å‘ä¸²å£1å‘é€æ•°æ®
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//ç­‰å¾…å‘é€ç»“æŸ
 			}
 			delay_ms(50);
 			if(USART1_RX_BUF[1] == 0x03 && USART1_RX_BUF[2] == 0xFF && USART1_RX_BUF[3] == 0xFE && USART1_RX_BUF[4] == 0x01){//55 03 FF FE 01
@@ -73,54 +74,41 @@ u8 Zigbee_Change_Mode(u8 modeNum){
 		}
 	}
 	else if(modeNum == 1){
-		//½øÈëÍ¸´«Ä£Ê½
-		while(1){
-			delay_ms(100);
+		//è¿›å…¥é€ä¼ æ¨¡å¼
+		while(EnterModeFlag == 0){
+			delay_ms(10);
 			for(i = 0; i < 9;i++){
-				USART_SendData(USART1, EnterMode1[i]);         //Ïò´®¿Ú1·¢ËÍÊı¾İ
-				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//µÈ´ı·¢ËÍ½áÊø
-			}
-			delay_ms(100);
-			if(USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x11 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x11){//55 04 00 11 00 11 
-				return 1;
+				USART_SendData(USART1, EnterMode1[i]);         //å‘ä¸²å£1å‘é€æ•°æ®
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//ç­‰å¾…å‘é€ç»“æŸ
 			}
 		}
+		EnterModeFlag = 0;
 	}
 	return 2;
 }
 
 /**
-  * @brief		²éÑ¯Ä£×éµ±Ç°×´Ì¬£¨¶ÁÈ¡²ÎÊı£©
+  * @brief		æŸ¥è¯¢æ¨¡ç»„å½“å‰çŠ¶æ€ï¼ˆè¯»å–å‚æ•°ï¼‰
   * @param		void
-  * @retval	    1->³É¹¦»ñÈ¡×´Ì¬
+  * @retval	    1->æˆåŠŸè·å–çŠ¶æ€
   */
 
 u8 Get_State(void){
 	u8 i;
-	u8 GetState[] = {0x55, 0x03, 0x00, 0x00, 0x00};//²éÑ¯ZigbeeÄ£×éµ±Ç°×´Ì¬
+	u8 GetState[] = {0x55, 0x03, 0x00, 0x00, 0x00};//æŸ¥è¯¢Zigbeeæ¨¡ç»„å½“å‰çŠ¶æ€
 	while(1){
 		for(i = 0; i < 5;i++){
-			USART_SendData(USART1, GetState[i]);         //Ïò´®¿Ú1·¢ËÍÊı¾İ
-			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//µÈ´ı·¢ËÍ½áÊø
+			USART_SendData(USART1, GetState[i]);         //å‘ä¸²å£1å‘é€æ•°æ®
+			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//ç­‰å¾…å‘é€ç»“æŸ
 		}
 		if(USART1_RX_BUF[1] == 0x2A && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x00 && USART1_RX_BUF[4] == 0x00){//55 2A 00 00 00
-			SelfLongAddr[0] = USART1_RX_BUF[6];
-			SelfLongAddr[1] = USART1_RX_BUF[7];
-			SelfLongAddr[2] = USART1_RX_BUF[8];
-			SelfLongAddr[3] = USART1_RX_BUF[9];
-			SelfLongAddr[4] = USART1_RX_BUF[10];
-			SelfLongAddr[5] = USART1_RX_BUF[11];
-			SelfLongAddr[6] = USART1_RX_BUF[12];
-			SelfLongAddr[7] = USART1_RX_BUF[13];
-			SelfShortAddr[0] = USART1_RX_BUF[17];
-			SelfShortAddr[1] = USART1_RX_BUF[18];
 			return 1;
 		}
 	}
 }
 
 /**
-  * @brief		·ÖÎöZigbeeµÄ·´À¡ÃüÁî
+  * @brief		åˆ†æZigbeeçš„åé¦ˆå‘½ä»¤
   * @param		void
   * @retval	void
   */
@@ -141,7 +129,10 @@ void Zigbee_Analyse_Command_Data(){
 			SelfShortAddr[1] = USART1_RX_BUF[18];
 		}
 		if(USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x02 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x02){//55 04 00 02 00 02
-			NetFlag = 1;//ÅĞ¶ÏÍøÂçÒÑ´ò¿ª
+			NetFlag = 1;//åˆ¤æ–­ç½‘ç»œå·²æ‰“å¼€
+		}
+		if(USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x11 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x11){//55 04 00 11 00 11 
+			EnterModeFlag = 1;
 		}
 	}
 	else if(model == E180){
