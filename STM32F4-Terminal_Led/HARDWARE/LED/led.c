@@ -32,7 +32,7 @@ void LED_Close(){
 }
 
 void LED_Open(){
-	PWMval = 500;
+	PWMval = 400;
 }
 
 void LED_Light_Plus(){

@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\USER;..\FWLIB\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\OLED;..\HARDWARE\IIC;..\U8G2;..\HARDWARE\Zigbee;..\HARDWARE\LED;..\HARDWARE\BEEP;..\HARDWARE\TIMER</IncludePath>
+              <IncludePath>..\CORE;..\USER;..\FWLIB\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\OLED;..\HARDWARE\IIC;..\U8G2;..\HARDWARE\Zigbee;..\HARDWARE\LED;..\HARDWARE\BEEP;..\HARDWARE\TIMER;..\HARDWARE\EXTI</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -443,11 +443,6 @@
               <FileType>2</FileType>
               <FilePath>..\CORE\startup_stm32f40_41xxx.s</FilePath>
             </File>
-            <File>
-              <FileName>stm32f4xx_tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\FWLIB\src\stm32f4xx_tim.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -477,6 +472,16 @@
               <FileName>stm32f4xx_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_tim.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -532,6 +537,11 @@
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\TIMER\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\EXTI\exti.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -2,46 +2,39 @@
 
 
 //PWM脉宽
-u16 PWMval = 100;
+u16 PWMval = 0;
 
 /**
 
-  * @brief    通用定时器3中断初始化
-  * @param    arr->自动重装值；psc->时钟预分频数
+  * @brief    通用定时器2中断初始化
+  * @param    arr->自动重装值
+  * @param	  psc->时钟预分频数
   * @retval   void
   */
 
-void TIM3_Int_Init(u16 arr,u16 psc){
+void TIM2_Int_Init(u16 arr,u16 psc){
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE); ///使能 TIM3 时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE); ///使能 TIM2 时钟
 	
 	//初始化定时器参数
 	TIM_TimeBaseStructure.TIM_Prescaler = psc;					//定时器分频
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数模式
 	TIM_TimeBaseStructure.TIM_Period = arr;						//自动重装载值
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;		//设置时钟分频因子
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
 	
-	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE );//使能TM3更新中断
+	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE );//使能TM2更新中断
 	
 	//TIM3 中断优先级设置
-	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; 				//定时器 3 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x01; 	//抢占优先级 1
+	NVIC_InitStructure.NVIC_IRQChannel=TIM2_IRQn; 				//定时器 2 中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x02; 	//抢占优先级 2
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03; 		//响应优先级 3
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;				//使能中断
 	NVIC_Init(&NVIC_InitStructure);								//初始化 NVIC
 	
-	TIM_Cmd(TIM3, ENABLE); //使能 TIM3 外设
-}
-
-//定时器3中断服务函数
-void TIM3_IRQHandler(void){
-	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET){ //溢出中断
-		LED1=!LED1;//DS1翻转
-		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
-	}
+	TIM_Cmd(TIM2, ENABLE); //使能 TIM2 外设
 }
 
 /**
@@ -86,3 +79,12 @@ void TIM3_PWM_Init(u32 arr,u32 psc){
 	TIM_Cmd(TIM3, ENABLE);  //使能TIM3
 }
 	
+//定时器2中断服务函数
+//主要记录程序运行时长
+//每毫秒触发一次中断
+// void TIM2_IRQHandler(void){
+// 	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
+// 		static u8 Second = 0;//秒级计数器
+// 		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
+// 	}
+// }
