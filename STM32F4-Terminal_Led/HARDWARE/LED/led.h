@@ -8,15 +8,15 @@
 #define LED1 PFout(10)// DS1    
  
 
-extern u8 LEDmode;//LED灯模式，0为普通模式，1为呼吸灯模式
-extern u8 direction;//呼吸灯亮度变化方向，1为增亮，0为减灭
+extern u8 LEDmode[8];//LED灯模式，0为普通模式，1为呼吸灯模式
+extern u8 direction[8];//呼吸灯亮度变化方向，1为增亮，0为减灭
 
 void LED_Init(void);//初始化
 void LED_Test(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin,u16 xms);//流水灯
-void LED_Close(void);
-void LED_Open(void);
-void LED_Light_Plus(void);
-void LED_Light_Minus(void);
-void LED_Light_Set(u8 value);
-void LED_Mode(u8 mode);
+void LED_Close(u8 number);
+void LED_Open(u8 number);
+void LED_Light_Plus(u8 number);
+void LED_Light_Minus(u8 number);
+void LED_Light_Set(u8 number, u8 value);
+void LED_Mode(u8 number, u8 mode);
 #endif 

@@ -165,27 +165,45 @@ void USART1_IRQHandler(void)
 
 void Analyse_Custom_Data(){
 //	u8 ErrAck[] = {'E','r','r'};
+	u8 i;
 	if(USART1_RX_BUF[12] == 0x01){//只有命令码为0x01的才需要分析执行
-		if(USART1_RX_BUF[14] == 0x00){//关灯
-			LED_Close();
+		if(USART1_RX_BUF[14] != 0){//对单个灯
+			if(USART1_RX_BUF[15] == 0x00){//关灯
+				LED_Close(USART1_RX_BUF[14]-1);
+			}
+			else if(USART1_RX_BUF[15] == 0x01){//开灯
+				LED_Open(USART1_RX_BUF[14]-1);
+			}
+			else if(USART1_RX_BUF[15] == 0x02){//亮度+
+				LED_Light_Plus(USART1_RX_BUF[14]-1);
+			}
+			else if(USART1_RX_BUF[15] == 0x03){//亮度-
+				LED_Light_Minus(USART1_RX_BUF[14]-1);
+			}
+			else if(USART1_RX_BUF[15] == 0x04){//亮度调至指定档位
+				LED_Light_Set(USART1_RX_BUF[14]-1,USART1_RX_BUF[16]);
+			}
+			else if(USART1_RX_BUF[15] == 0x05){//进入普通模式（开机默认）
+				LED_Mode(USART1_RX_BUF[14]-1,0);
+			}
+			else if(USART1_RX_BUF[15] == 0x06){//进入呼吸灯模式
+				LED_Mode(USART1_RX_BUF[14]-1,1);
+			}
 		}
-		else if(USART1_RX_BUF[14] == 0x01){//开灯
-			LED_Open();
-		}
-		else if(USART1_RX_BUF[14] == 0x02){//亮度+
-			LED_Light_Plus();
-		}
-		else if(USART1_RX_BUF[14] == 0x03){//亮度-
-			LED_Light_Minus();
-		}
-		else if(USART1_RX_BUF[14] == 0x04){//亮度调至指定档位
-			LED_Light_Set(USART1_RX_BUF[15]);
-		}
-		else if(USART1_RX_BUF[14] == 0x05){//进入普通模式（开机默认）
-			LED_Mode(0);
-		}
-		else if(USART1_RX_BUF[14] == 0x06){//进入呼吸灯模式
-			LED_Mode(1);
+		else{//对所有灯
+			if(USART1_RX_BUF[15] == 0x05){//进入普通模式（开机默认）
+				for(i = 0; i < 4; i++){
+					LED_Mode(i,0);
+				}
+			}
+			else if(USART1_RX_BUF[15] == 0x06){//进入呼吸灯模式
+				for(i = 0; i < 4; i++){
+					LED_Mode(i,0);
+				}
+				for(i = 0; i < 4; i++){
+					LED_Mode(i,1);
+				}
+			}
 		}
 	}
 }

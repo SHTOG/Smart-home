@@ -27,25 +27,78 @@ void EXTI0_Init(void)
 
 	NVIC_InitTypeDef   NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;//外部中断0
-  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//抢占优先级0
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//抢占优先级2
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;//子优先级2
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;//使能外部中断通道
 	NVIC_Init(&NVIC_InitStructure);//配置
 	
-	  
 }
 
+//外部中断0服务函数
 void EXTI0_IRQHandler(void){
     if(EXTI_GetITStatus(EXTI_Line0)!=RESET){//判断某个线上的中断是否发生
-		if(PWMval == 0){
-			PWMval = 400;
+		TI0CD = MilliSecond+20;
+		while(TI0CD > MilliSecond){
+			if(PAin(0) == 0) {			
+				EXTI_ClearITPendingBit(EXTI_Line0); //清除 LINE 上的中断标志位
+				return;
+			}
+		}
+		if(PWMval[0] == 0){
+			LED_Open(0);
 		}
 		else{
-			PWMval = 0;
+			LED_Close(0);
 		}
     EXTI_ClearITPendingBit(EXTI_Line0); //清除 LINE 上的中断标志位
     }
 }
+//外部中断1服务函数
+void EXTI1_IRQHandler(void){
+    if(EXTI_GetITStatus(EXTI_Line1)!=RESET){//判断某个线上的中断是否发生
+		if(TI1CD <= MilliSecond){
+			if(PWMval[1] == 0){
+				LED_Open(1);
+			}
+			else{
+				LED_Close(1);
+			}
+			TI1CD = MilliSecond+20;
+		}
+    EXTI_ClearITPendingBit(EXTI_Line1); //清除 LINE 上的中断标志位
+    }
+}
+//外部中断2服务函数
+void EXTI2_IRQHandler(void){
+    if(EXTI_GetITStatus(EXTI_Line2)!=RESET){//判断某个线上的中断是否发生
+		if(TI2CD <= MilliSecond){
+			if(PWMval[2] == 0){
+				LED_Open(2);
+			}
+			else{
+				LED_Close(2);
+			}
+			TI2CD = MilliSecond+20;
+		}
+    EXTI_ClearITPendingBit(EXTI_Line2); //清除 LINE 上的中断标志位
+    }
+}
+//外部中断3服务函数
+void EXTI3_IRQHandler(void){
+    if(EXTI_GetITStatus(EXTI_Line3)!=RESET){//判断某个线上的中断是否发生
+		if(TI3CD <= MilliSecond){
+			if(PWMval[3] == 0){
+				LED_Open(3);
+			}
+			else{
+				LED_Close(3);
+			}
+			TI3CD = MilliSecond+20;
+		}
+    EXTI_ClearITPendingBit(EXTI_Line3); //清除 LINE 上的中断标志位
+    }
+}
+
 
 
 
