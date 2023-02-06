@@ -1,12 +1,13 @@
 #include "Zigbee.h"
 
-
-
 /*Begin of 全局变量*/
 u8 SelfShortAddr[] = {0xFF,0xFF};//设备短地址:协调器初始FFFF，其他初始0000
 u8 SelfLongAddr[8] = {0x70, 0xE4, 0x61, 0x25, 0x00, 0x4B, 0x12, 0x00};//指定协调器的长地址
 u8 NetFlag = 0;
-u8 EnterModeFlag;//进入透传模式标志位，置一表示进入成功
+u8 EnterModeFlag = 2;//Zigbee模块模式切换标志位，进入配置模式置0，透传模式置1
+u8 SetSendTargetFlag = 0;//设置透传目标标志位，分两步，先设置目标短地址，再设置目标端口，短地址设置成功后置1，端口设置成功后置0
+u8 GetStateFlag = 0;//读取模块状态标志位，读取成功置1
+u8 ReadySetTargetFlag = 1;//成功设置透传目标标志位，1为已设置，0为待设置
 /*End of 全局变量*/
 
 /**
@@ -56,35 +57,32 @@ void OpenNet(){
   */
 
 
-u8 Zigbee_Change_Mode(u8 modeNum){
+void Zigbee_Change_Mode(u8 modeNum){
 	u8 EnterMode0[] = {0x2B, 0x2B, 0x2B};//Zigbee透传模式切换HEX指令模式 0为HEX指令模式
 	u8 EnterMode1[] = {0x55, 0x07, 0x00, 0x11, 0x00, 0x03, 0x00, 0x01, 0x13};//Zigbee HEX指令模式切换透传模式 1为数据透传模式
 	u8 i;
 	if(modeNum == 0){
-		while(1){
+		//进入配置模式
+		while(EnterModeFlag != 0){
 			delay_ms(10);
 			for(i = 0; i < 3;i++){
 				USART_SendData(USART1, EnterMode0[i]);         //向串口1发送数据
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 			}
 			delay_ms(50);
-			if(USART1_RX_BUF[1] == 0x03 && USART1_RX_BUF[2] == 0xFF && USART1_RX_BUF[3] == 0xFE && USART1_RX_BUF[4] == 0x01){//55 03 FF FE 01
-				return 0;
-			}
 		}
 	}
 	else if(modeNum == 1){
 		//进入透传模式
-		while(EnterModeFlag == 0){
+		while(EnterModeFlag != 1){
 			delay_ms(10);
 			for(i = 0; i < 9;i++){
 				USART_SendData(USART1, EnterMode1[i]);         //向串口1发送数据
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 			}
+			delay_ms(50);
 		}
-		EnterModeFlag = 0;
 	}
-	return 2;
 }
 
 /**
@@ -93,18 +91,17 @@ u8 Zigbee_Change_Mode(u8 modeNum){
   * @retval	    1->成功获取状态
   */
 
-u8 Get_State(void){
+void Get_State(void){
 	u8 i;
 	u8 GetState[] = {0x55, 0x03, 0x00, 0x00, 0x00};//查询Zigbee模组当前状态
-	while(1){
+	while(GetStateFlag == 1){
+		delay_ms(10);
 		for(i = 0; i < 5;i++){
 			USART_SendData(USART1, GetState[i]);         //向串口1发送数据
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 		}
-		if(USART1_RX_BUF[1] == 0x2A && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x00 && USART1_RX_BUF[4] == 0x00){//55 2A 00 00 00
-			return 1;
-		}
 	}
+	GetStateFlag = 0;
 }
 
 /**
@@ -127,12 +124,20 @@ void Zigbee_Analyse_Command_Data(){
 			SelfLongAddr[7] = USART1_RX_BUF[13];
 			SelfShortAddr[0] = USART1_RX_BUF[17];
 			SelfShortAddr[1] = USART1_RX_BUF[18];
+			GetStateFlag = 1;
 		}
-		if(USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x02 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x02){//55 04 00 02 00 02
+		else if(USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x02 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x02){//55 04 00 02 00 02
 			NetFlag = 1;//判断网络已打开
 		}
-		if(USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x11 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x11){//55 04 00 11 00 11 
+		else if(ReadySetTargetFlag == 1 && USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x11 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x11){//55 04 00 11 00 11 
 			EnterModeFlag = 1;
+		}
+		else if(ReadySetTargetFlag == 0 && USART1_RX_BUF[1] == 0x04 && USART1_RX_BUF[2] == 0x00 && USART1_RX_BUF[3] == 0x11 && USART1_RX_BUF[4] == 0x00 && USART1_RX_BUF[5] == 0x11){//55 04 00 11 00 11 
+			if(SetSendTargetFlag == 0) SetSendTargetFlag = 1;
+			else SetSendTargetFlag = 0;
+		}
+		else if(USART1_RX_BUF[1] == 0x03 && USART1_RX_BUF[2] == 0xFF && USART1_RX_BUF[3] == 0xFE && USART1_RX_BUF[4] == 0x01){//55 03 FF FE 01
+			if(EnterModeFlag != 0) EnterModeFlag = 0;
 		}
 	}
 	else if(model == E180){
@@ -140,4 +145,44 @@ void Zigbee_Analyse_Command_Data(){
 	}
 }
 
+/**
+  * @brief		设置目标短地址和目标端口
+  * @param		DSAddr:目标短地址
+  * @param		DPort:目标端口
+  * @retval		1->设置成功
+  */
+
+void Set_Send_Target(u8* DSAddr,u8 DPort){
+	u8 SetDSAddr[] = {0x55,0x08,0x00,0x11,0x00,0x01,0x00,DSAddr[0],DSAddr[1],0x00};
+	u8 SetDPort[] = {0x55,0x07,0x00,0x11,0x00,0x02,0x00,DPort,0x00};
+	u8 temp = 0,i;
+	//计算一下上面两个命令的校验码
+	for(i = 0; i < SetDSAddr[1] - 1; i++){
+		temp = temp^SetDSAddr[2+i];
+	}
+    SetDSAddr[9] = temp;
+	temp = 0;
+	for(i = 0; i < SetDPort[1] - 1; i++){
+		temp = temp^SetDPort[2+i];
+	}
+	SetDPort[8] = temp;
+	ReadySetTargetFlag = 0;
+	//设置目标短地址
+	while(SetSendTargetFlag == 0){
+		delay_ms(50);
+		for(i = 0; i < 10;i++){
+			USART_SendData(USART1, SetDSAddr[i]);         //向串口1发送数据
+			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+		}
+	}
+	//设置目标端口
+	while(SetSendTargetFlag == 1){
+		delay_ms(50);
+		for(i = 0; i < 9; i++){
+			USART_SendData(USART1, SetDPort[i]);         //向串口1发送数据
+			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+		}
+	}
+	ReadySetTargetFlag = 1;
+}
 

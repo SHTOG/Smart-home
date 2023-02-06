@@ -7,7 +7,6 @@
 #include "led.h"
 #include "beep.h"
 #include "myList.h"
-#include "AnalyseAndSend.h"
 #include "timer.h"
 #include "24cxx.h"
 //#include "u8x8.h"
@@ -52,26 +51,18 @@ int main(void) {
 	}
 	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateList
 	OLED_Clear();
-/*  测试用 */
-//	DeviceList = CreateList();//调用CreateList
-//	u8 ladd[] = {1,1,1,1,1,1,1,1};
-//	u8 sadd3[] = {3,3};
-//	u8 sadd2[] = {2,2};
-//	u8 sadd1[] = {1,1};
-//	u8 sadd4[] = {4,4};
-//	InsertNodeByType(DeviceList,03,1,ladd,sadd1);
-//	InsertNodeByType(DeviceList,01,1,ladd,sadd2);
-//	InsertNodeByType(DeviceList,03,1,ladd,sadd3);
-//	InsertNodeByType(DeviceList,04,1,ladd,sadd4);
-/*  测试用 */
+	u8 DSAddr[] = {0x11,0x11};
 	while (1){
-		LED1 = !LED1;
-//		AT24CXX_Save_List(0,DeviceList);
-//		DeviceList = AT24CXX_Load_List(0);
-		printList(DeviceList);//测试下输出
+		LED0 = !LED0;
+//		printList(DeviceList);//测试下输出
+		if(ReadySetTargetFlag == 0){
+			Zigbee_Change_Mode(0);
+			Set_Send_Target(DSAddr,0x01);
+			Send_Custom_Data(USART1,USART2_RX_BUF[6],USART2_RX_BUF[7],&USART2_RX_BUF[8]);
+			Zigbee_Change_Mode(1);
+		}
 		delay_ms(2333);
   	}
-
 }
 
 

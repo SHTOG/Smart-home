@@ -23,7 +23,7 @@ void Zigbee_Init(u32 bound){
 	//进hex配置模式
 	Zigbee_Change_Mode(0);
 	//指定透传目标为协调器
-	Set_SendDirection();
+	Set_Send_Target();
 	//开始配网(确保进入PANID为0101的局网),并获取长地址和短地址
 	OpenNet(0x0101);
 	
@@ -78,7 +78,7 @@ u8 Zigbee_Change_Mode(u8 modeNum){
   * @retval		1->设置成功
   */
 
-u8 Set_SendDirection(){
+u8 Set_Send_Target(){
 	u8 i;
 	u8 SetDirection[] = {0x55, 0x08, 0x00, 0x11, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10, 0x55, 0x07, 0x00, 0x11, 0x00, 0x02, 0x00, 0x01, 0x12};
 	while(1){

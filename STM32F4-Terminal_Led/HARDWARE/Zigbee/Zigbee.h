@@ -22,7 +22,7 @@ extern u8 NetFlag;
 
 void Zigbee_Init(u32 bound);
 u8 Zigbee_Change_Mode(u8 modeNum);
-u8 Set_SendDirection(void);
+u8 Set_Send_Target(void);
 u8 OpenNet(u16 Direction_PANID);
 u8 Get_State(void);
 u8 Upload_Address(void);
