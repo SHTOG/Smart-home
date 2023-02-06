@@ -438,11 +438,6 @@
               <FileType>1</FileType>
               <FilePath>.\myList.c</FilePath>
             </File>
-            <File>
-              <FileName>AnalyseAndSend.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\AnalyseAndSend.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

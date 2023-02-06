@@ -22,7 +22,7 @@ void LED_Init(void)
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz 
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉 
     GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化 GPIO
-	GPIO_ResetBits(GPIOA,GPIO_Pin_6);//GPIOA5 设置高，灯灭 
+	GPIO_SetBits(GPIOA,GPIO_Pin_6);//GPIOA5 设置高，灯灭 
 }
 void LED_Test(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin,u16 xms){
 	GPIO_ResetBits(GPIOx,GPIO_Pin);
