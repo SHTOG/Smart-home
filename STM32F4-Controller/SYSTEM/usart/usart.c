@@ -255,6 +255,7 @@ void USART2_IRQHandler(void){
 }
 
 u8 BootedTimeFlag = 0;//开机时长记录flag,开机满10分钟就置1
+u8 AckFlag = 0;//来自终端的应答标志位，收到应答置1处理完马上归0
 
 void Analyse_Custom_Data(u8 USARTNum){
 	u8 DeviceLongAddr[8];
@@ -263,7 +264,7 @@ void Analyse_Custom_Data(u8 USARTNum){
 	u8 Ack[] = {'O','K'};
 	u8 type;//设备类型
 	if(USARTNum == 1){//如果来自终端
-		if(USART1_RX_BUF[12] == 0x00){//设备信息指令
+		if(USART1_RX_BUF[12] == 0x00){//设备信息命令
 			Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
 			for(i = 0; i < 8; i++){
 				DeviceLongAddr[i] = USART1_RX_BUF[4 + i]; 
@@ -279,12 +280,15 @@ void Analyse_Custom_Data(u8 USARTNum){
 				}
 			}
 		}
+		if(USART1_RX_BUF[12] == 0xFF){//设备应答命令
+			if(USART1_RX_BUF[14] == 'O' && USART1_RX_BUF[15] == 'K'){
+				AckFlag = 1;
+			}
+		}
 	}
 	else if(USARTNum == 2){//如果来自云端
-		LED_Test(GPIOA,GPIO_Pin_6,200);
 		//先设置目标短地址和端口，然后直接发送就OK
 		ReadySetTargetFlag = 0;
-		LED_Test(GPIOA,GPIO_Pin_6,200);
 	}
 }
 

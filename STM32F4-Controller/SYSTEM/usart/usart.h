@@ -20,6 +20,7 @@ extern u16 USART2_RX_STA;         		//接收状态标记
 extern struct myDevice* DeviceList;
 extern u8 SelfLongAddr[8];
 extern u8 BootedTimeFlag;
+extern u8 AckFlag;
 /*End of extern*/
 
 

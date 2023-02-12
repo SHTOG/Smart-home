@@ -10,7 +10,9 @@
             "led.h": "c",
             "sys.h": "c",
             "zigbee.h": "c",
-            "mylist.h": "c"
+            "mylist.h": "c",
+            "usart.h": "c",
+            "stm32f4xx_conf.h": "c"
         }
     }
 }

@@ -35,6 +35,10 @@ void printList(Device* headNode) {
 /*  测试用 */
 
 int main(void) {
+	u8* DSAddr;
+	u8 type;
+	u8 len;
+	u8* Data;
   	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分为2
 	delay_init(168);    //初始化延时函数 
 	OLED_Init();		//初始化OLED
@@ -51,15 +55,24 @@ int main(void) {
 	}
 	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateList
 	OLED_Clear();
-	u8 DSAddr[] = {0x11,0x11};
 	while (1){
 		LED0 = !LED0;
 //		printList(DeviceList);//测试下输出
 		if(ReadySetTargetFlag == 0){
+			DSAddr = &USART2_RX_BUF[4];
+			type = USART2_RX_BUF[6];
+			len = USART2_RX_BUF[7];
+			Data = &USART2_RX_BUF[8];
+			LED_Test(GPIOA,GPIO_Pin_6,200);
 			Zigbee_Change_Mode(0);
 			Set_Send_Target(DSAddr,0x01);
-			Send_Custom_Data(USART1,USART2_RX_BUF[6],USART2_RX_BUF[7],&USART2_RX_BUF[8]);
 			Zigbee_Change_Mode(1);
+			while(AckFlag != 1){
+				Send_Custom_Data(USART1,type,len,Data);
+				delay_ms(100);//这里后期可以用UCOS的任务轮转调度优化CPU资源   或者删了这个delay，让终端疯狂发应答~
+			}
+			AckFlag = 0;
+			LED_Test(GPIOA,GPIO_Pin_6,200);
 		}
 		delay_ms(2333);
   	}
