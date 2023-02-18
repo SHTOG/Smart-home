@@ -12,6 +12,10 @@ u8 USART2_RX_BUF[200];
 u16 USART1_RX_STA=0;       //接收状态标记	
 u16 USART2_RX_STA=0;       //接收状态标记	
 
+//标志位
+u8 USART1ReciveITEnable = 1;//串口1接收中断允许位,置1时允许，0为禁止
+u8 USART2ReciveITEnable = 1;//串口2接收中断允许位,置1时允许，0为禁止
+
 /**
   * @brief		初始化IO 串口1 
   * @param		bound->波特率
@@ -124,9 +128,9 @@ void USART2_Init(u32 bound){
 
 void USART1_IRQHandler(void)
 {
-	u8 Res,ReciveITEnable = 1;
+	u8 Res;
 
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET && ReciveITEnable )  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET && USART1ReciveITEnable)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 	{
 		Res =USART_ReceiveData(USART1);//(USART1->DR);	//读取接收到的数据
 		
@@ -192,7 +196,6 @@ void USART1_IRQHandler(void)
 		}
 		if(USART1_RX_STA&0x8000){
 			//当串口接收完一串数据
-			ReciveITEnable = 0;//关闭串口1接收中断
 			//如果串口接收到的是来自Zigbee的命令
 			if(USART1_RX_BUF[0] == 0x55) Zigbee_Analyse_Command_Data();
 			//如果接收到的是设备间传输的数据
@@ -203,7 +206,6 @@ void USART1_IRQHandler(void)
 			//归零接收完成标志和伪接收寄存器准备重新接收
 			USART1_RX_STA=0;
 			USART1_RX_BUF[0] = 0;
-			ReciveITEnable = 1;//打开串口1接收中断
 		}
   	} 
 } 
@@ -215,7 +217,7 @@ void USART1_IRQHandler(void)
   */
 void USART2_IRQHandler(void){
 	u8 Res;
-	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET){//接收中断(接收到的数据必须是0x0d 0x0a结尾)
+	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET && USART2ReciveITEnable){//接收中断(接收到的数据必须是0x0d 0x0a结尾)
 		Res = USART_ReceiveData(USART2);//(USART2->DR);	//读取接收到的数据
 		if(USART2_RX_BUF[0] == 0xA1){//如果接收到的是来自ESP32的数据
 			if(USART2_RX_STA&0x4000)//接收到了0x0d
@@ -281,8 +283,11 @@ void Analyse_Custom_Data(u8 USARTNum){
 			}
 		}
 		if(USART1_RX_BUF[12] == 0xFF){//设备应答命令
-			if(USART1_RX_BUF[14] == 'O' && USART1_RX_BUF[15] == 'K'){
+			if(USART1_RX_BUF[14] == 'O' && USART1_RX_BUF[15] == 'K'){//设备应答ok
 				AckFlag = 1;
+			}
+			else if(USART1_RX_BUF[14] == 0x03){//窗帘应答命令
+				CurtainDeep = USART1_RX_BUF[15];
 			}
 		}
 	}

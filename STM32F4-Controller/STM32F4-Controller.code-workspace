@@ -12,7 +12,8 @@
             "zigbee.h": "c",
             "mylist.h": "c",
             "usart.h": "c",
-            "stm32f4xx_conf.h": "c"
+            "stm32f4xx_conf.h": "c",
+            "delay.h": "c"
         }
     }
 }

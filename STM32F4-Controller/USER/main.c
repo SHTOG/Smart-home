@@ -15,6 +15,7 @@
 /*Begin of 全局变量*/
 u8 ReadFlag = 0;//状态读取成功标志位
 Device* DeviceList;//设备长短地址数据链表
+u8 CurtainDeep;//
 /*End of 全局变量*/
 
 /*Begin of 函数声明*/
@@ -35,7 +36,8 @@ void printList(Device* headNode) {
 /*  测试用 */
 
 int main(void) {
-	u8* DSAddr;
+	u8 i;
+	u8 DSAddr[2];
 	u8 type;
 	u8 len;
 	u8* Data;
@@ -56,25 +58,47 @@ int main(void) {
 	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateList
 	OLED_Clear();
 	while (1){
-		LED0 = !LED0;
+		LED1 = 1;
 //		printList(DeviceList);//测试下输出
 		if(ReadySetTargetFlag == 0){
-			DSAddr = &USART2_RX_BUF[4];
+			USART2ReciveITEnable = 0;//关闭串口中断保证赋值完整
+			DSAddr[0] = USART2_RX_BUF[4];
+			DSAddr[1] = USART2_RX_BUF[5];
 			type = USART2_RX_BUF[6];
 			len = USART2_RX_BUF[7];
-			Data = &USART2_RX_BUF[8];
-			LED_Test(GPIOA,GPIO_Pin_6,200);
+			Data = (u8*)malloc(sizeof(u8)*len);
+			for(i = 0; i < len ; i++){
+				Data[i] = USART2_RX_BUF[8+i];
+			}
+			USART2ReciveITEnable = 1;//打开串口中断
+			LED_Test(GPIOA,GPIO_Pin_6,200);//测试用
 			Zigbee_Change_Mode(0);
 			Set_Send_Target(DSAddr,0x01);
 			Zigbee_Change_Mode(1);
 			while(AckFlag != 1){
 				Send_Custom_Data(USART1,type,len,Data);
-				delay_ms(100);//这里后期可以用UCOS的任务轮转调度优化CPU资源   或者删了这个delay，让终端疯狂发应答~
+//				delay_ms(50);//这里后期可以用UCOS的任务轮转调度优化CPU资源   或者删了这个delay，让终端疯狂发应答~
 			}
 			AckFlag = 0;
-			LED_Test(GPIOA,GPIO_Pin_6,200);
+			// if(type == 0x03){//比较特殊的窗帘终端，1.需要收集反馈信息，2.命令间隔应该为50ms
+			// 	CurtainDeep = 101;//发送之前先初始化CurtainDeep避免新设置的打开程度与上一次设置的不同窗帘重复
+			// 	while(CurtainDeep != Data[0]){
+			// 		Send_Custom_Data(USART1,type,len,Data);
+			// 		delay_ms(50);
+			// 	}
+			// 	//把更改后的数据发送给APP
+			// 	//Send_Custom_Data(USART2,type,)//在这里我先不使用用串口2发送的函数，空下来了重新修改串口透传函数，串口2需要发送数据新增一个“短地址”
+			// }
+			// else{
+			// 	while(AckFlag != 1){
+			// 		Send_Custom_Data(USART1,type,len,Data);
+			// 		delay_ms(100);//这里后期可以用UCOS的任务轮转调度优化CPU资源   或者删了这个delay，让终端疯狂发应答~
+			// 	}
+			// 	AckFlag = 0;
+			// }
+			free(Data);
 		}
-		delay_ms(2333);
+		LED1 = 0;
   	}
 }
 

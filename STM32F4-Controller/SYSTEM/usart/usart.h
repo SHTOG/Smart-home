@@ -21,6 +21,9 @@ extern struct myDevice* DeviceList;
 extern u8 SelfLongAddr[8];
 extern u8 BootedTimeFlag;
 extern u8 AckFlag;
+extern u8 USART1ReciveITEnable;
+extern u8 USART2ReciveITEnable;
+extern u8 CurtainDeep;
 /*End of extern*/
 
 
