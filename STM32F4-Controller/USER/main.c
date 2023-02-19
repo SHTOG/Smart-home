@@ -77,25 +77,11 @@ int main(void) {
 			Zigbee_Change_Mode(1);
 			while(AckFlag != 1){
 				Send_Custom_Data(USART1,type,len,Data);
-//				delay_ms(50);//这里后期可以用UCOS的任务轮转调度优化CPU资源   或者删了这个delay，让终端疯狂发应答~
+				AckJudge = 1;
+				delay_ms(100);//目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
 			}
+			AckJudge = 0;
 			AckFlag = 0;
-			// if(type == 0x03){//比较特殊的窗帘终端，1.需要收集反馈信息，2.命令间隔应该为50ms
-			// 	CurtainDeep = 101;//发送之前先初始化CurtainDeep避免新设置的打开程度与上一次设置的不同窗帘重复
-			// 	while(CurtainDeep != Data[0]){
-			// 		Send_Custom_Data(USART1,type,len,Data);
-			// 		delay_ms(50);
-			// 	}
-			// 	//把更改后的数据发送给APP
-			// 	//Send_Custom_Data(USART2,type,)//在这里我先不使用用串口2发送的函数，空下来了重新修改串口透传函数，串口2需要发送数据新增一个“短地址”
-			// }
-			// else{
-			// 	while(AckFlag != 1){
-			// 		Send_Custom_Data(USART1,type,len,Data);
-			// 		delay_ms(100);//这里后期可以用UCOS的任务轮转调度优化CPU资源   或者删了这个delay，让终端疯狂发应答~
-			// 	}
-			// 	AckFlag = 0;
-			// }
 			free(Data);
 		}
 		LED1 = 0;

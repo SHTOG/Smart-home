@@ -15,6 +15,9 @@ u16 USART2_RX_STA=0;       //接收状态标记
 //标志位
 u8 USART1ReciveITEnable = 1;//串口1接收中断允许位,置1时允许，0为禁止
 u8 USART2ReciveITEnable = 1;//串口2接收中断允许位,置1时允许，0为禁止
+u8 BootedTimeFlag = 0;//开机时长记录flag,开机满10分钟就置1
+u8 AckFlag = 0;//来自终端的应答标志位，收到应答置1处理完马上归0
+u8 AckJudge = 0;//在delay函数内植入这个判断标志位，为1时delay_ms期间如果收到终端的应答就直接退出延时
 
 /**
   * @brief		初始化IO 串口1 
@@ -256,8 +259,6 @@ void USART2_IRQHandler(void){
  	} 
 }
 
-u8 BootedTimeFlag = 0;//开机时长记录flag,开机满10分钟就置1
-u8 AckFlag = 0;//来自终端的应答标志位，收到应答置1处理完马上归0
 
 void Analyse_Custom_Data(u8 USARTNum){
 	u8 DeviceLongAddr[8];
