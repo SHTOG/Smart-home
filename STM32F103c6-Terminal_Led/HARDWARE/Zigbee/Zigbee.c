@@ -19,8 +19,6 @@ u8 SetSendTargetFlag = 0;//ÉèÖÃÍ¸´«Ä¿±ê±êÖ¾Î»£¬·ÖÁ½²½£¬ÏÈÉèÖÃÄ¿±ê¶ÌµØÖ·£¬ÔÙÉèÖÃÄ
   */
   
 void Zigbee_Init(u32 bound){
-	delay_ms(5000);//µÈZigbeeÆô¶¯ÍêÈ«
-    
 	//´®¿Ú³õÊ¼»¯
 	USART1_Init(bound);	//´®¿Ú³õÊ¼»¯²¨ÌØÂÊÎªbound£¬Ä¬ÈÏÊÇ115200ÓëZigbeeµÄ³ö³§Ä¬ÈÏÖµÍ³Ò»
 	

@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>LED</TargetName>
+      <TargetName>Curtain</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_LD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;..\CORE;..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\StepMotor;..\HARDWARE\Zigbee</IncludePath>
+              <IncludePath>..\USER;..\CORE;..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\StepMotor;..\HARDWARE\Zigbee;..\HARDWARE\IWDG</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -443,6 +443,11 @@
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\Zigbee\Zigbee.c</FilePath>
             </File>
+            <File>
+              <FileName>iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\IWDG\iwdg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -507,6 +512,11 @@
               <FileName>stm32f10x_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\STM32F10x_FWLib\src\stm32f10x_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32F10x_FWLib\src\stm32f10x_iwdg.c</FilePath>
             </File>
           </Files>
         </Group>
