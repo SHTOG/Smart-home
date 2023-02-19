@@ -1,0 +1,3 @@
+[submodule "mPy-ESP32"]
+	path = mPy-ESP32
+	url = git@github.com:SHTOG/mPy-ESP32
