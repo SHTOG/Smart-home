@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "led.h": "c",
-        "timer.h": "c",
-        "zigbee.h": "c",
-        "beep.h": "c"
-    }
-}
