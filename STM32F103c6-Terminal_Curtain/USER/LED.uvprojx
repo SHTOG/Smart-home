@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_LD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;..\CORE;..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\StepMotor;..\HARDWARE\Zigbee;..\HARDWARE\IWDG</IncludePath>
+              <IncludePath>..\USER;..\CORE;..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\StepMotor;..\HARDWARE\Zigbee;..\HARDWARE\IWDG;..\HARDWARE\TEA</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -447,6 +447,11 @@
               <FileName>iwdg.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\IWDG\iwdg.c</FilePath>
+            </File>
+            <File>
+              <FileName>tea.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\TEA\tea.c</FilePath>
             </File>
           </Files>
         </Group>

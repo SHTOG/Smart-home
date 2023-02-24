@@ -129,22 +129,23 @@ void USART2_Init(u32 bound){
   * @retval		void
   */
 
-void USART1_IRQHandler(void)
-{
+void USART1_IRQHandler(void){
 	u8 Res;
-
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET && USART1ReciveITEnable)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
-	{
-		Res =USART_ReceiveData(USART1);//(USART1->DR);	//读取接收到的数据
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET){  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 		
-		if((USART1_RX_STA&0x8000)==0)//接收未完成
-		{
-			
+		Res =USART_ReceiveData(USART1);	//读取接收到的数据
+		if((USART1_RX_STA&0x8000)==0){//接收未完成
 			if(USART1_RX_BUF[0] == 0xC1){
 				//如果接收到的是自定义传输的数据格式
 				if(USART1_RX_STA&0x4000)//接收到了0x0d
 				{
-					if(Res!=0x0a)USART1_RX_STA=0;//接收错误,重新开始
+					if(Res!=0x0a){
+						USART1_RX_STA &= 0xBFFF;
+						USART1_RX_BUF[USART1_RX_STA&0X3FFF]=0X0D ;//把0x0D放到USART1_RX_BUF的倒数第二位
+						USART1_RX_STA++;//数据长度++
+						USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART1_RX_BUF的最后一位
+						USART1_RX_STA++;//数据长度++
+					}
 					else USART1_RX_STA|=0x8000;	//接收完成了 
 				}
 				else //还没收到0X0D
@@ -170,17 +171,6 @@ void USART1_IRQHandler(void)
 					USART1_RX_BUF[1] = 0;
 				}
 			}
-//			else if(USART1_RX_BUF[0] == 'O'){
-//				USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART1_RX_BUF的最后一位	
-//				USART1_RX_STA++;//数据长度++
-//				if(USART1_RX_BUF[1] == 'K') USART1_RX_STA|=0x8000;//接收完成了
-//				else if(USART1_RX_STA >= 2){
-//					//接收错误,重新开始
-//					USART1_RX_STA=0;
-//					USART1_RX_BUF[0] = 0;
-//					USART1_RX_BUF[1] = 0;
-//				} 
-//			}
 			else if(USART1_RX_BUF[0] == 0){
 				//如果第一个字节是0，则判断为刚开始接收第一字节数据
 				USART1_RX_BUF[1] = 0;//给数据位Zigbee命令的时候用
@@ -190,9 +180,8 @@ void USART1_IRQHandler(void)
 			else{
 				//接收错误,重新开始
 				USART1_RX_STA=0;
+				USART1_RX_BUF[0] = 0;
 				USART1_RX_BUF[1] = 0;
-				USART1_RX_BUF[2] = 0;
-				USART1_RX_BUF[3] = 0;
 				USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
 				USART1_RX_STA++;//数据长度++
 			}
@@ -200,18 +189,18 @@ void USART1_IRQHandler(void)
 		if(USART1_RX_STA&0x8000){
 			//当串口接收完一串数据
 			//如果串口接收到的是来自Zigbee的命令
-			if(USART1_RX_BUF[0] == 0x55) Zigbee_Analyse_Command_Data();
+			if(USART1_RX_BUF[0] == 0x55)		Zigbee_Analyse_Command_Data();
 			//如果接收到的是设备间传输的数据
 			else if( USART1_RX_BUF[0] == 0xC1
-			 && USART1_RX_BUF[1] == 0xC2
-			 && USART1_RX_BUF[2] == 0xC3
-			 && USART1_RX_BUF[3] == 0xC4) {Analyse_Custom_Data(1);}
+				  && USART1_RX_BUF[1] == 0xC2
+				  && USART1_RX_BUF[2] == 0xC3
+				  && USART1_RX_BUF[3] == 0xC4) 	Analyse_Custom_Data(1);
 			//归零接收完成标志和伪接收寄存器准备重新接收
 			USART1_RX_STA=0;
 			USART1_RX_BUF[0] = 0;
 		}
-  	} 
-} 
+     } 
+}
 
 /**
   * @brief		串口2中断服务程序
@@ -266,15 +255,24 @@ void Analyse_Custom_Data(u8 USARTNum){
 	u8 i;//循环用
 	u8 Ack[] = {'O','K'};
 	u8 type;//设备类型
+	//把密文拿出
+	u16 len = (USART1_RX_STA&0X3FFF) - 4;//获取加密数据长度
+	u8 teaKey[] = {'N','Z','o','k','G','u','z','T','n','F','s','6','D','C','H','4'};
+	u8* Data = (u8*)malloc(sizeof(u8) * len);
+	for(i = 0; i < len; i++){
+		Data[i] = USART1_RX_BUF[4 + i];
+	}
+	//开始解密数据
+	decrypt(Data,len,teaKey);
 	if(USARTNum == 1){//如果来自终端
-		if(USART1_RX_BUF[12] == 0x00){//设备信息命令
+		if(Data[8] == 0x00){//设备信息命令
 			Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
 			for(i = 0; i < 8; i++){
-				DeviceLongAddr[i] = USART1_RX_BUF[4 + i]; 
+				DeviceLongAddr[i] = Data[i]; 
 			}
-			type = USART1_RX_BUF[14];
-			DeviceShortAddr[0] = USART1_RX_BUF[15];
-			DeviceShortAddr[1] = USART1_RX_BUF[16];
+			type = Data[10];
+			DeviceShortAddr[0] = Data[11];
+			DeviceShortAddr[1] = Data[12];
 			if(CheckByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
 				InsertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
 				//这里留个位置给《链表发送到APP端》
@@ -283,12 +281,12 @@ void Analyse_Custom_Data(u8 USARTNum){
 				}
 			}
 		}
-		if(USART1_RX_BUF[12] == 0xFF){//设备应答命令
-			if(USART1_RX_BUF[14] == 'O' && USART1_RX_BUF[15] == 'K'){//设备应答ok
+		if(Data[8] == 0xFF){//设备应答命令
+			if(Data[10] == 'O' && Data[11] == 'K'){//设备应答ok
 				AckFlag = 1;
 			}
-			else if(USART1_RX_BUF[14] == 0x03){//窗帘应答命令
-				CurtainDeep = USART1_RX_BUF[15];
+			else if(Data[10] == 0x03){//窗帘应答命令
+				CurtainDeep = Data[11];
 			}
 		}
 	}
@@ -299,8 +297,33 @@ void Analyse_Custom_Data(u8 USARTNum){
 }
 
 void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
+	u8 i = 0,j = 0,newDataLen = 10+len;
+	u8* newData;
 	if(USARTx == USART1){
 		delay_ms(50);//莫名怪异的情况，这里至少要delay个40ms，数据才能发出，不然有时候会发送失败
+		
+		u8 teaKey[] = {'N','Z','o','k','G','u','z','T','n','F','s','6','D','C','H','4'};
+		while(newDataLen % 8 != 0){//把除帧头帧尾数据大小补足到所占内存为8字节的倍数
+			newDataLen++;
+		}
+		newData = (u8*)malloc(sizeof(u8) * newDataLen);
+		for(; i < 8; i++){
+			newData[i] = SelfLongAddr[i];
+		}
+		newData[i] = type;
+		i++;
+		newData[i] = len;
+		i++;
+		for(; j<len ;i++,j++){
+			newData[i] = Data[j];
+		}
+		for(; i < newDataLen; i++){
+			newData[i] = 0;
+		}
+		
+		//加密
+		encrypt(newData,newDataLen,teaKey);
+
 		USART_SendData(USART1, 0xC1);
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 		USART_SendData(USART1, 0xC2);
@@ -310,25 +333,13 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 		USART_SendData(USART1, 0xC4);
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 
-		for(u8 i = 0; i < 8; i++){
-			USART_SendData(USART1, SelfLongAddr[i]);
-			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
-		}
-
-		USART_SendData(USART1, type);
-		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
-
-		USART_SendData(USART1, len);
-		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
-
-		for(u8 i = 0; i < len; i++){
-			USART_SendData(USART1, Data[i]);
+		for(i = 0; i < newDataLen; i++){
+			USART_SendData(USART1, newData[i]);
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 		}
 
 		USART_SendData(USART1, 0x0D);
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
-		
 		USART_SendData(USART1, 0x0A);
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	}

@@ -156,7 +156,7 @@ void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite)
    *@param	headNode	:结构体指针
    *@retval	void
    */
-void AT24CXX_Save_List(u16 WriteAddr,Device* headNode){
+void AT24CXX_Save_List(u16 WriteAddr,struct myDevice* headNode){
 	u8 i;
 	Device* posNode = headNode->next;
 	AT24CXX_WriteOneByte(EE_TYPE-1,0X66);//24Cxx设备的在倒数第二位写66，表示已经保存过链表
@@ -182,7 +182,7 @@ void AT24CXX_Save_List(u16 WriteAddr,Device* headNode){
    *@retval	Device	:读取到的结构体指针
    */
 
-Device* AT24CXX_Load_List(u16 ReadAddr){
+struct myDevice* AT24CXX_Load_List(u16 ReadAddr){
 	u8 type,i;
 	u8 LongAddr[8];
 	u8 ShortAddr[2];

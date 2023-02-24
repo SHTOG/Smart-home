@@ -1,9 +1,7 @@
 #ifndef __MYLIST_H
-#define __MYLIST_H			  	 
+#define __MYLIST_H		
+#include "sys.h"	  	 
 #include "delay.h"
-#include "sys.h"
-#include "string.h"
-#include "stdlib.h"
 
 typedef struct myDevice{
     //Êý¾ÝÓò

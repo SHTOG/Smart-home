@@ -9,6 +9,7 @@
 #include "24Cxx.h"
 #include "Zigbee.h"
 #include "beep.h"
+#include "tea.h"
 
 #define USART_REC_LEN  			200  	//定义最大接收字节数 200
 

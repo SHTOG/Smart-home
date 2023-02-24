@@ -75,7 +75,13 @@ void USART1_IRQHandler(void){
 				//如果接收到的是自定义传输的数据格式
 				if(USART1_RX_STA&0x4000)//接收到了0x0d
 				{
-					if(Res!=0x0a)USART1_RX_STA=0;//接收错误,重新开始
+					if(Res!=0x0a){
+						USART1_RX_STA &= 0xBFFF;
+						USART1_RX_BUF[USART1_RX_STA&0X3FFF]=0X0D ;//把0x0D放到USART1_RX_BUF的倒数第二位
+						USART1_RX_STA++;//数据长度++
+						USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART1_RX_BUF的最后一位
+						USART1_RX_STA++;//数据长度++
+					}
 					else USART1_RX_STA|=0x8000;	//接收完成了 
 				}
 				else //还没收到0X0D
@@ -115,7 +121,7 @@ void USART1_IRQHandler(void){
 				USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
 				USART1_RX_STA++;//数据长度++
 			}
-		}  
+		}
 		if(USART1_RX_STA&0x8000){
 			//当串口接收完一串数据
 			//如果串口接收到的是来自Zigbee的命令
@@ -129,46 +135,55 @@ void USART1_IRQHandler(void){
 			USART1_RX_STA=0;
 			USART1_RX_BUF[0] = 0;
 		}
-     }
+     } 
 }
 
 void Analyse_Custom_Data(){
-	u8 i;
 	u8 Ack[] = {'O','K'};
-	if(USART1_RX_BUF[12] == 0xFF){ //收到了中控的应答
+	//把密文拿出
+	u16 len = (USART1_RX_STA&0X3FFF) - 4;//获取加密数据长度
+	u8 i;
+	u8 teaKey[] = {'N','Z','o','k','G','u','z','T','n','F','s','6','D','C','H','4'};
+	u8* Data = (u8*)malloc(sizeof(u8) * len);
+	for(i = 0; i < len; i++){
+		Data[i] = USART1_RX_BUF[4 + i];
+	}
+	//开始解密数据
+	decrypt(Data,len,teaKey);
+	if(Data[8] == 0xFF){ //收到了中控的应答
 		AckFlag = 1;
 	}
-	else if(USART1_RX_BUF[12] == 0x01){//只有命令码为0x01的才需要分析执行
-		if(USART1_RX_BUF[14] != 0){//对单个灯
-			if(USART1_RX_BUF[15] == 0x00){//关灯
-				LED_Close(USART1_RX_BUF[14]-1);
+	else if(Data[8] == 0x01){//只有命令码为0x01的才需要分析执行
+		if(Data[10] != 0){//对单个灯
+			if(Data[11] == 0x00){//关灯
+				LED_Close(Data[10]-1);
 			}
-			else if(USART1_RX_BUF[15] == 0x01){//开灯
-				LED_Open(USART1_RX_BUF[14]-1);
+			else if(Data[11] == 0x01){//开灯
+				LED_Open(Data[10]-1);
 			}
-			else if(USART1_RX_BUF[15] == 0x02){//亮度+
-				LED_Light_Plus(USART1_RX_BUF[14]-1);
+			else if(Data[11] == 0x02){//亮度+
+				LED_Light_Plus(Data[10]-1);
 			}
-			else if(USART1_RX_BUF[15] == 0x03){//亮度-
-				LED_Light_Minus(USART1_RX_BUF[14]-1);
+			else if(Data[11] == 0x03){//亮度-
+				LED_Light_Minus(Data[10]-1);
 			}
-			else if(USART1_RX_BUF[15] == 0x04){//亮度调至指定档位
-				LED_Light_Set(USART1_RX_BUF[14]-1,USART1_RX_BUF[16]);
+			else if(Data[11] == 0x04){//亮度调至指定档位
+				LED_Light_Set(Data[10]-1,USART1_RX_BUF[16]);
 			}
-			else if(USART1_RX_BUF[15] == 0x05){//进入普通模式（开机默认）
-				LED_Mode(USART1_RX_BUF[14]-1,0);
+			else if(Data[11] == 0x05){//进入普通模式（开机默认）
+				LED_Mode(Data[10]-1,0);
 			}
-			else if(USART1_RX_BUF[15] == 0x06){//进入呼吸灯模式
-				LED_Mode(USART1_RX_BUF[14]-1,1);
+			else if(Data[11] == 0x06){//进入呼吸灯模式
+				LED_Mode(Data[10]-1,1);
 			}
 		}
 		else{//对所有灯
-			if(USART1_RX_BUF[15] == 0x05){//进入普通模式（开机默认）
+			if(Data[11] == 0x05){//进入普通模式（开机默认）
 				for(i = 0; i < 4; i++){
 					LED_Mode(i,0);
 				}
 			}
-			else if(USART1_RX_BUF[15] == 0x06){//进入呼吸灯模式
+			else if(Data[11] == 0x06){//进入呼吸灯模式
 				for(i = 0; i < 4; i++){
 					LED_Mode(i,0);
 				}
@@ -181,8 +196,38 @@ void Analyse_Custom_Data(){
 	}
 }
 
+/**
+  * @brief		将数据封装到私有协议并发送
+  * @param		type:自身设备码
+  * @param		len :有效数据长度
+  * @param		Data :有效数据内容指针（使用时应该把有效数据封装在u8数组内，然后传参的时候就输入数组名就可以了）
+  * @retval		void
+  */
 void Send_Custom_Data(u8 type, u8 len, u8* Data){
-	u8 i;
+	u8 i = 0,j = 0,newDataLen = 10+len;
+	u8* newData;
+	u8 teaKey[] = {'N','Z','o','k','G','u','z','T','n','F','s','6','D','C','H','4'};
+	while(newDataLen % 8 != 0){//把除帧头帧尾数据大小补足到所占内存为8字节的倍数
+		newDataLen++;
+	}
+	newData = (u8*)malloc(sizeof(u8) * newDataLen);
+	for(; i < 8; i++){
+		newData[i] = SelfLongAddr[i];
+	}
+	newData[i] = type;
+	i++;
+	newData[i] = len;
+	i++;
+	for(; j<len ;i++,j++){
+		newData[i] = Data[j];
+	}
+	for(; i < newDataLen; i++){
+		newData[i] = 0;
+	}
+	
+	//加密
+	encrypt(newData,newDataLen,teaKey);
+	
 	USART_SendData(USART1, 0xC1);
 	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	USART_SendData(USART1, 0xC2);
@@ -192,19 +237,8 @@ void Send_Custom_Data(u8 type, u8 len, u8* Data){
 	USART_SendData(USART1, 0xC4);
 	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 
-	for(i = 0; i < 8; i++){
-		USART_SendData(USART1, SelfLongAddr[i]);
-		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
-	}
-
-	USART_SendData(USART1, type);
-	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
-
-	USART_SendData(USART1, len);
-	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
-
-	for(i = 0; i < len; i++){
-		USART_SendData(USART1, Data[i]);
+	for(i = 0; i < newDataLen; i++){
+		USART_SendData(USART1, newData[i]);
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	}
 
