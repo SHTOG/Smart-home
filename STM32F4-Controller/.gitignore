@@ -28,15 +28,15 @@
 **.map
 **.[Mm]51
 *.[Mm]66
-*.SCR
-*.scr
+**.SCR
+**.scr
 
 # LINK output
-*.ABS
+**.ABS
 
 # Libraries
-*.lib
-*.LIB
+**.lib
+**.LIB
 
 
 # uv output
