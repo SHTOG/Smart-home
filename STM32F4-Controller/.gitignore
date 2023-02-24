@@ -25,8 +25,8 @@
 *.LST
 *.lst
 *.MAP
-*.map
-*.[Mm]51
+**.map
+**.[Mm]51
 *.[Mm]66
 *.SCR
 *.scr
@@ -40,12 +40,12 @@
 
 
 # uv output
-*.lnp
-*.build_log.htm
-*.HEX
-*.hex
-*.AXF
-*.axf
+**.lnp
+**.build_log.htm
+**.HEX
+**.hex
+**.AXF
+**.axf
 
 # Build Files
 *._IA
