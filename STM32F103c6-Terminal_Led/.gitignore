@@ -53,8 +53,9 @@
 **._[Ii][Ii]
 
 # project
-**.uvgui.**
-**.uvguix.**
+**.uvgui.*
+**.uvguix.*
+**.uvprotx
 
 
 
