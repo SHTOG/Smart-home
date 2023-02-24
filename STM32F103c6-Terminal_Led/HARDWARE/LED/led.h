@@ -5,7 +5,7 @@
 #include "timer.h"
 //LED 端口定义 这段代码里面最关键就是 2 个宏定义：
 #define LED0 PBout(4)
-#define LED1 PBout(5)
+#define LED1 PCout(13)
 
 
 extern u8 LEDmode[8];//LED灯模式，0为普通模式，1为呼吸灯模式

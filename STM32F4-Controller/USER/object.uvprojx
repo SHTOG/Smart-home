@@ -147,7 +147,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>11</TargetSelection>
+          <TargetSelection>12</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -161,7 +161,7 @@
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
             <InitializationFile></InitializationFile>
-            <Driver>STLink\ST-LINKIII-KEIL_SWO.dll</Driver>
+            <Driver>BIN\CMSIS_AGDI.dll</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\USER;..\FWLIB\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\OLED;..\HARDWARE\IIC;..\U8G2;..\HARDWARE\Zigbee;..\HARDWARE\LED;..\HARDWARE\BEEP;..\HARDWARE\TIMER;..\HARDWARE\24C02</IncludePath>
+              <IncludePath>..\CORE;..\USER;..\FWLIB\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\OLED;..\HARDWARE\IIC;..\U8G2;..\HARDWARE\Zigbee;..\HARDWARE\LED;..\HARDWARE\BEEP;..\HARDWARE\TIMER;..\HARDWARE\24C02;..\HARDWARE\TEA</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -542,6 +542,11 @@
               <FileName>24Cxx.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\24C02\24Cxx.c</FilePath>
+            </File>
+            <File>
+              <FileName>tea.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\TEA\tea.c</FilePath>
             </File>
           </Files>
         </Group>

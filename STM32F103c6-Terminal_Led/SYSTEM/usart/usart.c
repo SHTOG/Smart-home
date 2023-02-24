@@ -145,6 +145,7 @@ void Analyse_Custom_Data(){
 	u8 i;
 	u8 teaKey[] = {'N','Z','o','k','G','u','z','T','n','F','s','6','D','C','H','4'};
 	u8* Data = (u8*)malloc(sizeof(u8) * len);
+	LED1 = 1;
 	for(i = 0; i < len; i++){
 		Data[i] = USART1_RX_BUF[4 + i];
 	}
@@ -192,8 +193,11 @@ void Analyse_Custom_Data(){
 				}
 			}
 		}
-		Send_Custom_Data(0x03,2,Ack);
+		Send_Custom_Data(0xFF,2,Ack);
+		
 	}
+	free(Data);
+	LED1 = 0;
 }
 
 /**
@@ -246,4 +250,5 @@ void Send_Custom_Data(u8 type, u8 len, u8* Data){
 	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	USART_SendData(USART1, 0x0A);
 	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+	free(newData);
 }

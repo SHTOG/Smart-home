@@ -194,7 +194,7 @@ void USART1_IRQHandler(void){
 			else if( USART1_RX_BUF[0] == 0xC1
 				  && USART1_RX_BUF[1] == 0xC2
 				  && USART1_RX_BUF[2] == 0xC3
-				  && USART1_RX_BUF[3] == 0xC4) 	Analyse_Custom_Data(1);
+				  && USART1_RX_BUF[3] == 0xC4) 	Analyse_Custom_Data();
 			//归零接收完成标志和伪接收寄存器准备重新接收
 			USART1_RX_STA=0;
 			USART1_RX_BUF[0] = 0;
@@ -240,7 +240,7 @@ void USART2_IRQHandler(void){
 			USART2_RX_STA++;//数据长度++
 		}
 		if(USART2_RX_STA&0x8000){//接收完成一段数据
-			Analyse_Custom_Data(2);//分析数据
+			Analyse_APP_Data();//分析数据
 			//归零接收完成标志和伪接收寄存器准备重新接收
 			USART2_RX_STA=0;
 			USART2_RX_BUF[0] = 0;
@@ -248,8 +248,13 @@ void USART2_IRQHandler(void){
  	} 
 }
 
+void Analyse_APP_Data(){
+	//如果来自云端
+		//先设置目标短地址和端口，然后直接发送就OK
+		ReadySetTargetFlag = 0;
+}
 
-void Analyse_Custom_Data(u8 USARTNum){
+void Analyse_Custom_Data(){
 	u8 DeviceLongAddr[8];
 	u8 DeviceShortAddr[2];
 	u8 i;//循环用
@@ -264,36 +269,35 @@ void Analyse_Custom_Data(u8 USARTNum){
 	}
 	//开始解密数据
 	decrypt(Data,len,teaKey);
-	if(USARTNum == 1){//如果来自终端
-		if(Data[8] == 0x00){//设备信息命令
-			Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
-			for(i = 0; i < 8; i++){
-				DeviceLongAddr[i] = Data[i]; 
-			}
-			type = Data[10];
-			DeviceShortAddr[0] = Data[11];
-			DeviceShortAddr[1] = Data[12];
-			if(CheckByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
-				InsertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
-				//这里留个位置给《链表发送到APP端》
-				if(BootedTimeFlag == 1){
-					AT24CXX_Save_List(0,DeviceList);
-				}
-			}
+	if (0)
+		__NOP;
+	//如果来自终端
+	if(Data[8] == 0x00){//设备信息命令
+		Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
+		for(i = 0; i < 8; i++){
+			DeviceLongAddr[i] = Data[i]; 
 		}
-		if(Data[8] == 0xFF){//设备应答命令
-			if(Data[10] == 'O' && Data[11] == 'K'){//设备应答ok
-				AckFlag = 1;
-			}
-			else if(Data[10] == 0x03){//窗帘应答命令
-				CurtainDeep = Data[11];
+		type = Data[10];
+		DeviceShortAddr[0] = Data[11];
+		DeviceShortAddr[1] = Data[12];
+		if(CheckByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
+			InsertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
+			//这里留个位置给《链表发送到APP端》
+			if(BootedTimeFlag == 1){
+				AT24CXX_Save_List(0,DeviceList);
 			}
 		}
 	}
-	else if(USARTNum == 2){//如果来自云端
-		//先设置目标短地址和端口，然后直接发送就OK
-		ReadySetTargetFlag = 0;
+	if(Data[8] == 0xFF){//设备应答命令
+		if(Data[10] == 'O' && Data[11] == 'K'){//设备应答ok
+			AckFlag = 1;
+		}
+		else if(Data[10] == 0x03){//窗帘应答命令
+			CurtainDeep = Data[11];
+		}
 	}
+	free(Data);
+
 }
 
 void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
@@ -375,9 +379,8 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 		
 		USART_SendData(USART2, 0x0A);
 		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
-
-		
 	}
+	free(newData);
 }
 
 

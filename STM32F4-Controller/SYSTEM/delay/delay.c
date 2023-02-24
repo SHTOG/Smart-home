@@ -184,6 +184,9 @@ void delay_xms(u16 nms)
 } 
 //延时nms 
 //nms:0~65535
+
+extern u8 AckFlag;
+extern u8 AckJudge;
 void delay_ms(u16 nms)
 {	 	 
 	u8 repeat=nms/540;						//这里用540,是考虑到某些客户可能超频使用,

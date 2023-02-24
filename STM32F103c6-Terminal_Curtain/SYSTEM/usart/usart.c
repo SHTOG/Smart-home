@@ -159,6 +159,7 @@ void Analyse_Custom_Data(){
 		else NewCurtainDeep = Data[10];
 		Send_Custom_Data(0x03,2,Ack);
 	}
+	free(Data);
 }
 
 /**

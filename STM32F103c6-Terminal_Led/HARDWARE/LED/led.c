@@ -9,13 +9,13 @@ u8 direction[8] = {1,1,1,1,1,1,1,1};//呼吸灯亮度变化方向，1为增亮，0为减灭
 void LED_Init(void) 
 {
     GPIO_InitTypeDef    GPIO_InitStructure; 
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);//使能 GPIOB 时钟 
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);//使能 GPIOB 时钟 
     //GPIOF9,F10 初始化设置 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;//LED0 和 LED1 对应 IO 口 
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;//LED1 对应 IO 口 
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//50MHz 
-    GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化 GPIO
-	GPIO_SetBits(GPIOF,GPIO_Pin_4 | GPIO_Pin_5);//GPIOB4,B5 设置高，灯灭 
+    GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化 GPIO
+	GPIO_SetBits(GPIOC,GPIO_Pin_13);//GPIOC13 设置高，灯灭 
 }
 
 void LED_Test(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin,u16 xms){
