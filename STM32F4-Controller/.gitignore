@@ -1,79 +1,61 @@
-# A .gitignore for Keil projects.
-# Taken mostly from http://www.keil.com/support/man/docs/uv4/uv4_b_filetypes.htm
+# Created by https://www.gitignore.io/api/keil
 
-# User-specific uVision files
-*.opt
-*.uvopt
-*.uvoptx
-*.uvgui
-*.uvgui.*
-*.uvguix.*
+### Keil ###
+# something maybe need to add
+# *.bat  # generate batch file
+# output/project_name # uv project generate without file ext
+# *.SRC # generate source file
+# *.src
 
-# Listing files
-*.cod
+# Prerequisites
+*.d
+*.dep
+# Object files
+*.o
+*.obj
+*.OBJ
+*.crf
 *.htm
-*.i
+*.html
+
+# Listing Files
+*.COD
+*.cod
+*.[Ii]
+*.LST
 *.lst
+*.MAP
 *.map
-*.m51
-*.m66
-# define exception below if needed
+*.[Mm]51
+*.[Mm]66
+*.SCR
 *.scr
 
-# Object and HEX files
-*.axf
-*.b[0-3][0-9]
-*.hex
-*.d
-*.crf
-*.elf
-*.hex
-*.h86
+# LINK output
+*.ABS
+
+# Libraries
 *.lib
-*.obj
-*.o
-*.sbr
+*.LIB
 
-# Build files
-# define exception below if needed
-*.bat
-*._ia
-*.__i
-*._ii
 
-# Generated output files
-/Listings/*
-/Objects/*
-
-# Debugger files
-# define exception below if needed
-*.ini
-
-# Other files
-*.build_log.htm
-*.cdb
-*.dep
-*.ic
-*.lin
+# uv output
 *.lnp
-*.orc
-# define exception below if needed
-*.pack
-# define exception below if needed
-*.pdsc
-*.plg
-# define exception below if needed
-*.sct
-*.sfd
-*.sfr
+*.build_log.htm
+*.HEX
+*.hex
+*.AXF
+*.axf
 
-# Miscellaneous
-*.tra
-*.bin
-*.fed
-*.l1p
-*.l2p
-*.iex
+# Build Files
+*._IA
+*.__[Ii]
+*._[Ii][Ii]
 
-# To explicitly override the above, define any exceptions here; e.g.:
-# !my_customized_scatter_file.sct
+# project
+#*.uvgui.*
+#*.uvguix.*
+
+
+
+# End of https://www.gitignore.io/api/keil
