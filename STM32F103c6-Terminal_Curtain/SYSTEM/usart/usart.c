@@ -154,10 +154,10 @@ void Analyse_Custom_Data(){
 		AckFlag = 1;
 	}
 	else if(Data[8] == 0x03){//只有命令码为0x03的才需要分析执行
+		Send_Custom_Data(0x03,2,Ack);
 		AllowChangeDeepFlag = 1;//第一次收到控制命令码时就开始允许更新CurtainDeep
 		if(Data[10] > 128) NewCurtainDeep = 128;
 		else NewCurtainDeep = Data[10];
-		Send_Custom_Data(0x03,2,Ack);
 	}
 	free(Data);
 }
@@ -212,6 +212,7 @@ void Send_Custom_Data(u8 type, u8 len, u8* Data){
 	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	USART_SendData(USART1, 0x0A);
 	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+	free(newData);
 }
 
 
