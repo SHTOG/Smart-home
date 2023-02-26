@@ -14,26 +14,14 @@
 
 /*Begin of 全局变量*/
 u8 ReadFlag = 0;//状态读取成功标志位
-Device* DeviceList;//设备长短地址数据链表
-u8 CurtainDeep;//
+Device* DeviceList = NULL;//设备长短地址数据链表
+u8 Esp32AckFlag = 0;
 /*End of 全局变量*/
 
 /*Begin of 函数声明*/
 //uint8_t u8x8_gpio_and_delay(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);//u8g2回调函数声明
 /*End of 函数声明*/
 
-
-/*  测试用 */
-void printList(Device* headNode) {
-	Device* pMove = headNode->next;
-	while (pMove != NULL) {
-		if(pMove->onlineFlag == 1){
-			Send_Custom_Data(USART2,pMove->type,2,pMove->ShortAddr);
-		}
-		pMove = pMove->next;
-	}
-}
-/*  测试用 */
 
 int main(void) {
 	u8 i;
@@ -50,16 +38,18 @@ int main(void) {
 	BEEP_Init();		//初始化中控蜂鸣器函数
 	AT24CXX_Init();
 	USART2_Init(115200);
-	TIM3_Int_Init(10-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10次为1ms     
-	TIM2_Int_Init(10000-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10000次为1s     
 	while(AT24CXX_Check()){
 		LED_Test(GPIOF,GPIO_Pin_9,200);
 	}
+	AT24CXX_Clear();//测试用
 	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateList
-	OLED_Clear();
+	TIM3_Int_Init(10-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10次为1ms     
+	TIM2_Int_Init(10000-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10000次为1s   
+//	OLED_Clear();
+//	PrintList(DeviceList);//开机向APP发送一次链表 //测试时注释掉这一行
 	while (1){
 		LED1 = 1;
-//		printList(DeviceList);//测试下输出
+		delay_ms(1000);
 		if(ReadySetTargetFlag == 0){
 			USART2ReciveITEnable = 0;//关闭串口中断保证赋值完整
 			DSAddr[0] = USART2_RX_BUF[4];
@@ -71,17 +61,22 @@ int main(void) {
 				Data[i] = USART2_RX_BUF[8+i];
 			}
 			USART2ReciveITEnable = 1;//打开串口中断
-			LED_Test(GPIOA,GPIO_Pin_6,200);//测试用
 			Zigbee_Change_Mode(0);
 			Set_Send_Target(DSAddr,0x01);
 			Zigbee_Change_Mode(1);
+			AckFlag = 0;
+			WaitTime = 0;//等待倒计时开始计时
 			while(AckFlag != 1){
+				if(WaitTime == 5){
+					SetNetStateByShorAddr(DeviceList,DSAddr);
+					break;
+				}
 				Send_Custom_Data(USART1,type,len,Data);
 				AckJudge = 1;
 				delay_ms(100);//目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
+
 			}
 			AckJudge = 0;
-			AckFlag = 0;
 			free(Data);
 		}
 		LED1 = 0;

@@ -1,5 +1,6 @@
 #ifndef __24CXX_H
 #define __24CXX_H
+#include "sys.h"
 #include "IIC.h"
 #include "delay.h"
 #include "myList.h"
@@ -24,6 +25,7 @@ void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite);	//从指定地址开始写
 void AT24CXX_Read(u16 ReadAddr,u8 *pBuffer,u16 NumToRead);   	//从指定地址开始读出指定长度的数据
 void AT24CXX_Save_List(u16 WriteAddr,Device* headNode);
 Device* AT24CXX_Load_List(u16 ReadAddr);
+void AT24CXX_Clear(void);
 
 u8 AT24CXX_Check(void);  //检查器件
 void AT24CXX_Init(void); //初始化IIC

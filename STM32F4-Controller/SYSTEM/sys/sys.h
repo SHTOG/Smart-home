@@ -4,6 +4,48 @@
 #include "stdlib.h"
 #include "string.h"
 
+typedef struct myDevice{
+    //数据域
+    u8 type;            //电器类型
+    u8 onlineFlag;      //入网标志，0-未入网，1-已入网
+    u8 LongAddr[8];     //Zigbee设备长地址
+    u8 ShortAddr[2];    //Zigbee设备短地址
+    //指针域
+    struct myDevice* next;
+}Device;
+
+extern u8 AckFlag;
+extern u8 AckJudge;
+extern Device* DeviceList;
+extern u8 Esp32AckFlag;
+extern u8 AckFlag;
+extern void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data);
+extern u8  USART1_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
+extern u16 USART1_RX_STA;         		//接收状态标记	
+extern u8  USART2_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
+extern u16 USART2_RX_STA;         		//接收状态标记	
+extern struct myDevice* DeviceList;
+extern u8 SelfLongAddr[8];
+extern u8 BootedTimeFlag;
+extern u8 AckFlag;
+extern u8 USART1ReciveITEnable;
+extern u8 USART2ReciveITEnable;
+extern u8 CurtainDeep;
+extern u8 AckJudge;
+extern u8 Esp32AckFlag;
+extern u8 SelfLongAddr[8];
+extern u8 SelfShortAddr[2];
+extern u8 NetFlag;
+extern u8 EnterModeFlag;
+extern u8 GetStateFlag;//读取模块状态标志位，读取成功置1
+extern u8 SetSendTargetFlag;//设置透传目标标志位，分两步，先设置目标短地址，再设置目标端口，短地址设置成功后置1，端口设置成功后置0
+extern u8 ReadySetTargetFlag;//成功设置透传目标标志位，1为已设置，0为待设置
+extern u16 MilliSecond;//毫秒级计数器
+extern u8 Second;//秒级计数器
+extern u8 Minute;//分级计数器
+extern u8 WaitTime;
+
+
 //0,不支持ucos
 //1,支持ucos
 #define SYSTEM_SUPPORT_OS		0		//定义系统文件夹是否支持UCOS
