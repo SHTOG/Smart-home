@@ -46,7 +46,8 @@ int main(void) {
 	TIM3_Int_Init(10-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10次为1ms     
 	TIM2_Int_Init(10000-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10000次为1s   
 //	OLED_Clear();
-//	PrintList(DeviceList);//开机向APP发送一次链表 //测试时注释掉这一行
+	UpdateList(DeviceList);//更新链表内所有终端在网状态
+	PrintList(DeviceList);//开机向APP发送一次链表 //测试时注释掉这一行
 	while (1){
 		LED1 = 1;
 		delay_ms(1000);

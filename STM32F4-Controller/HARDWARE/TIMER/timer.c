@@ -1,5 +1,10 @@
 #include "timer.h"
 
+u16 MilliSecond = 0;//毫秒级计数器
+u8 Second = 0;//秒级计数器
+u8 Minute = 0;//分级计数器
+u8 WaitTime = 5;//秒级等待应答时间,置零时开始计时,计到5停止
+
 /**
 
   * @brief    通用定时器2中断初始化
@@ -73,26 +78,9 @@ void TIM3_Int_Init(u16 arr,u16 psc){
 //每秒触发一次中断
 void TIM2_IRQHandler(void){
 	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
-		if(Minute % 2  == 0){//每两分钟
-			if(CheckByOnlineFlag(DeviceList)){//如果有设备不在网，则每两分钟打开一次网络
-				Zigbee_Change_Mode(0);
-				OpenNet();
-				Zigbee_Change_Mode(1);
-			}
-		}
-		if(Minute % 10 == 0){//每十分钟
-			UpdateList(DeviceList);	
-		}
 		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
 	}
 }
-
-
-u16 MilliSecond = 0;//毫秒级计数器
-u8 Second = 0;//秒级计数器
-u8 Minute = 0;//分级计数器
-
-u8 WaitTime = 5;//秒级等待应答时间,置零时开始计时,计到5停止
 
 //定时器3中断服务函数
 //提供系统时间测量
@@ -116,12 +104,16 @@ void TIM3_IRQHandler(void){
 			}
 			MilliSecond = 0;
 		}
-		// if(BootedTimeFlag == 0 && HalfSecond == 30){
-		// 	//每30秒向APP发送链表内容并将链表存入EEPROM
-		// 	//这里留个位置给《链表发送到APP端》
-		// 	AT24CXX_Save_List(0,DeviceList);
-		// 	HalfSecond = 0;
-		// }
+		if(Minute % 2  == 0){//每两分钟
+			if(CheckByOnlineFlag(DeviceList)){//如果有设备不在网，则每两分钟打开一次网络
+				Zigbee_Change_Mode(0);
+				OpenNet();
+				Zigbee_Change_Mode(1);
+			}
+		}
+		if(Minute % 10 == 0){//每十分钟
+			UpdateList(DeviceList);
+		}
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
 	}
 }

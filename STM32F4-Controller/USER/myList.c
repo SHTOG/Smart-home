@@ -105,25 +105,22 @@ void UpdateList(Device* headNode){
 
 	Device* posNode = headNode->next;
 	while (posNode != NULL){
-		if(posNode->onlineFlag == 1){
-			Zigbee_Change_Mode(0);
-			Set_Send_Target(posNode->ShortAddr,0x01);
-			Zigbee_Change_Mode(1);
-			AckFlag = 0;
-			WaitTime = 0;
-			while(AckFlag != 1){
-				if(WaitTime == 5){
-					posNode->onlineFlag = 0;
-					break;
-				}
-				Send_Custom_Data(USART1,0xFF,0,NULL);//请求应答
-				AckJudge = 1;
-				delay_ms(100);//目前是在内部植入了一个AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
+		Zigbee_Change_Mode(0);
+		Set_Send_Target(posNode->ShortAddr,0x01);
+		Zigbee_Change_Mode(1);
+		AckFlag = 0;
+		WaitTime = 0;
+		while(AckFlag != 1){
+			if(WaitTime == 5){
+				posNode->onlineFlag = 0;
+				break;
 			}
-			AckJudge = 0;
-			posNode = posNode->next;
+			Send_Custom_Data(USART1,0xFF,0,NULL);//请求应答
+			AckJudge = 1;
+			delay_ms(100);//目前是在内部植入了一个AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
 		}
-		else posNode = posNode->next;
+		AckJudge = 0;
+		posNode = posNode->next;
 	}
 }
 
