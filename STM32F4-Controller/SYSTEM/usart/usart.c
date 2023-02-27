@@ -275,19 +275,20 @@ void Analyse_Custom_Data(){
 	decrypt(Data,len,teaKey);
 
 	//如果来自终端
-	if(Data[8] == 0x00){//设备信息命令
+	if(Data[8] == 0x00){//设备信息命令		
+
+		//这里又出现了在串口1中断在此需求串口1中断
+		//		Zigbee_Change_Mode(0);
+		//		Set_Send_Target(DeviceShortAddr,0x01);
+		//		Zigbee_Change_Mode(1);
+		Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
+
 		for(i = 0; i < 8; i++){
 			DeviceLongAddr[i] = Data[i]; 
 		}
 		type = Data[10];
 		DeviceShortAddr[0] = Data[11];
 		DeviceShortAddr[1] = Data[12];
-		
-		//这里又出现了在串口1中断在此需求串口1中断
-//		Zigbee_Change_Mode(0);
-//		Set_Send_Target(DeviceShortAddr,0x01);
-//		Zigbee_Change_Mode(1);
-		Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
 
 		if(CheckByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
 			InsertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
