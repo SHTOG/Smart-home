@@ -13,12 +13,12 @@ int main(void) {
 	LED_Init();			//初始化LEDio口
 	EXTI0_Init();
 	TIM2_Int_Init(10-1,7200-1);//定时器时钟72M，分频系数7200，所以72M/7200=10Khz的计数频率，计数10次为1ms
-//	IWDG_Init(6,1562); 	//约10秒喂一次狗，10秒不喂狗程序复位
+	IWDG_Init(6,1562); 	//约10秒喂一次狗，10秒不喂狗程序复位
 	Zigbee_Init(115200);//串口和Zigbee一块初始化
 	TIM3_PWM_Init(500-1,72-1);//72M/72=1Mhz的计数频率,重装载值500，所以PWM频率为 1M/500=2Khz.(周期为500us)
 	LED1 = 0;//测试用
 	while (1){
-//		IWDG_Feed();//喂狗
+		IWDG_Feed();//喂狗
 		// 电灯根据模式工作
 		for(i = 0; i < 4; i++){
 			if(LEDmode[i] == 0){

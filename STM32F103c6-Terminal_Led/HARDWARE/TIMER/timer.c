@@ -1,6 +1,8 @@
 #include "timer.h"
 
 
+u32 WaitTime = 0;//等待时长，小于900时每秒增加1，当增加到900时判断为中控断
+
 //PWM脉宽
 u16 PWMval[8] = {0};
 
@@ -119,6 +121,16 @@ uint64_t TI3CD;//外部按键中断3消抖
 void TIM2_IRQHandler(void){
 	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
 		MilliSecond++;
+		WaitTime++;
+		if(WaitTime == 900000){//当15分钟了WaitTime还没有被清零，则判断为中控掉线
+			AckFlag = 0;
+			while(WaitTime == 900000 && AckFlag != 1){//收到中控的应答或收到中控的请求应答就退出循环
+				Send_Custom_Data(0x00,2,SelfShortAddr);//发送设备信息命令
+				delay_ms(500);
+				IWDG_Feed();//喂狗
+			}
+			WaitTime = 0;//刷新等待时间
+		}
 		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
 	}
 }

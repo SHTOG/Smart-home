@@ -1,6 +1,9 @@
 #ifndef _TIMER_H
 #define _TIMER_H
 #include "sys.h"
+#include "iwdg.h"
+#include "usart.h"
+
 extern u16 PWMval[8];
 extern void (*TIM_SetCompare[8])(TIM_TypeDef* TIMx, uint16_t Compare1);
 extern uint64_t MilliSecond;//Ãë¼¶¼ÆÊýÆ÷

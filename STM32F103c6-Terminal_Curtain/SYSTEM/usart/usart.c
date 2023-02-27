@@ -150,8 +150,13 @@ void Analyse_Custom_Data(){
 	}
 	//开始解密数据
 	decrypt(Data,len,teaKey);
-	if(Data[8] == 0xFF){ //收到了中控的应答
-		AckFlag = 1;
+	if(Data[8] == 0xFF){//收到了设备应答命令
+		if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
+			AckFlag = 1;
+		}
+		else if(Data[9] == 0x00){//中控在请求应答
+			Send_Custom_Data(0xFF,2,Ack);//发送自己的设备信息
+		}
 	}
 	else if(Data[8] == 0x03){//只有命令码为0x03的才需要分析执行
 		Send_Custom_Data(0x03,2,Ack);
