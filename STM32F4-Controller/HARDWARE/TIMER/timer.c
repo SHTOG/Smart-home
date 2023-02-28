@@ -106,13 +106,13 @@ void TIM3_IRQHandler(void){
 			}
 			MilliSecond = 0;
 		}
-		if(Minute % 2  == 0){//每两分钟
-			if(CheckDeviceNodeByOnlineFlag(DeviceList)){//如果有设备不在网，则每两分钟打开一次网络
-				Zigbee_Change_Mode(0);
-				OpenNet();
-				Zigbee_Change_Mode(1);
-			}
-		}
+//		if(Minute % 2  == 0){//每两分钟
+//			if(CheckDeviceNodeByOnlineFlag(DeviceList)){//如果有设备不在网，则每两分钟打开一次网络
+//				Zigbee_Change_Mode(0);
+//				OpenNet();
+//				Zigbee_Change_Mode(1);
+//			}
+//		}
 		if(Minute % 10 == 0){//每十分钟
 			UpdateDeviceList(DeviceList);
 		}
