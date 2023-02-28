@@ -4,6 +4,9 @@
 #include "stdlib.h"
 #include "string.h"
 
+#define MAX_DATA_FROM_ESP32_LEN 20   //与esp32通信数据帧的有效数据
+
+//设备信息链表结点
 typedef struct myDevice{
     //数据域
     u8 type;            //电器类型
@@ -13,6 +16,30 @@ typedef struct myDevice{
     //指针域
     struct myDevice* next;
 }Device;
+
+
+//与Esp32间通信数据流链表结点
+typedef struct CommandStreamWithEsp32{
+    //数据域
+    u8 DSAddr[2];//指令终端短地址
+    u8 type;//指令终端设备类型码
+    u8 len;//有效数据长度
+    u8 Data[MAX_DATA_FROM_ESP32_LEN];//有效数据
+    u8 DataDirection;//数据传输方向,1->来自ESP32   2->准备发往Esp32
+    //指针域
+    struct CommandStreamWithEsp32* next;
+}Esp32CommandStream;
+
+
+//来自终端的数据流链表结点
+typedef struct CommandStreamFromTerminal{
+    //数据域
+    u8 type;//指令终端设备类型码
+    u8 len;//有效数据长度
+    u8 Data[MAX_DATA_FROM_ESP32_LEN];//有效数据
+    //指针域
+    struct CommandStreamFromTerminal* next;
+}TerminalCommandStream;
 
 extern u8 AckFlag;
 extern u8 AckJudge;
@@ -24,7 +51,7 @@ extern u8  USART1_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符
 extern u16 USART1_RX_STA;         		//接收状态标记	
 extern u8  USART2_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
 extern u16 USART2_RX_STA;         		//接收状态标记	
-extern struct myDevice* DeviceList;
+extern Device* DeviceList;
 extern u8 SelfLongAddr[8];
 extern u8 BootedTimeFlag;
 extern u8 AckFlag;
@@ -43,7 +70,9 @@ extern u8 ReadySetTargetFlag;//成功设置透传目标标志位，1为已设置，0为待设置
 extern u16 MilliSecond;//毫秒级计数器
 extern u8 Second;//秒级计数器
 extern u8 Minute;//分级计数器
-extern u8 WaitTime;
+extern u8 WaitTime;//秒级等待应答时间,置零时开始计时,计到3停止
+extern u8 EspWaitTime;//秒级等待应答时间,置零时开始计时,计到5停止
+extern Esp32CommandStream* Esp32CommandStreamList;//与Esp32间通信数据流链表
 
 
 //0,不支持ucos

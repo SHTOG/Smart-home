@@ -17,7 +17,6 @@ u8 SetSendTargetFlag = 0;//设置透传目标标志位，分两步，先设置�
   */
 
 void Zigbee_Init(u32 bound){
-	delay_ms(5000);//等Zigbee启动完全
     //串口初始化
 	USART1_Init(bound);	//串口初始化波特率为bound，默认是115200与Zigbee的出厂默认值统一
 	//进入配置模式
@@ -26,10 +25,8 @@ void Zigbee_Init(u32 bound){
 	OpenNet();
 	//读取设备信息
 	Get_State();
-	PFout(9) = 0;
 	//进入透传模式
 	Zigbee_Change_Mode(1);
-	PFout(10) = 0;
 }
 /**
   * @brief		打开Zigbee模块的网络（协调器：如果未建立网络，则建立一个新网络；如果已建立网络，则再调用此函数时为开放网络180s，180s内终端和路由器可加入）
@@ -167,6 +164,7 @@ void Set_Send_Target(u8* DSAddr,u8 DPort){
 	}
 	SetDPort[8] = temp;
 	//设置目标短地址
+	ReadySetTargetFlag = 0;
 	while(SetSendTargetFlag == 0){
 		delay_ms(50);
 		for(i = 0; i < 10;i++){

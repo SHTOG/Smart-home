@@ -3,7 +3,8 @@
 u16 MilliSecond = 0;//毫秒级计数器
 u8 Second = 0;//秒级计数器
 u8 Minute = 0;//分级计数器
-u8 WaitTime = 5;//秒级等待应答时间,置零时开始计时,计到5停止
+u8 WaitTime = 3;//秒级等待应答时间,置零时开始计时,计到3停止
+u8 EspWaitTime = 5;//秒级等待应答时间,置零时开始计时,计到5停止
 
 /**
 
@@ -90,7 +91,8 @@ void TIM3_IRQHandler(void){
 		MilliSecond++;
 		if(MilliSecond == 1000){
 			Second++;//秒数增加
-			if(WaitTime < 5) WaitTime++;
+			if(WaitTime < 3) WaitTime++;
+			if(EspWaitTime < 5) EspWaitTime++;
 			if(Second == 60){
 				Minute++;//分数增加
 
@@ -105,14 +107,14 @@ void TIM3_IRQHandler(void){
 			MilliSecond = 0;
 		}
 		if(Minute % 2  == 0){//每两分钟
-			if(CheckByOnlineFlag(DeviceList)){//如果有设备不在网，则每两分钟打开一次网络
+			if(CheckDeviceNodeByOnlineFlag(DeviceList)){//如果有设备不在网，则每两分钟打开一次网络
 				Zigbee_Change_Mode(0);
 				OpenNet();
 				Zigbee_Change_Mode(1);
 			}
 		}
 		if(Minute % 10 == 0){//每十分钟
-			UpdateList(DeviceList);
+			UpdateDeviceList(DeviceList);
 		}
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
 	}

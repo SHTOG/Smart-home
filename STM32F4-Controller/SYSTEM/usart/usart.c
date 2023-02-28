@@ -249,19 +249,28 @@ void USART2_IRQHandler(void){
 }
 
 void Analyse_APP_Data(){
-	if(USART2_RX_BUF[6] == 0xFF){
-		if(USART2_RX_BUF[8] == 'O' && USART2_RX_BUF[9] == 'K' ){
-			Esp32AckFlag = 1;
-		}
+	u8 i;
+	u8 Ack[] = {'O','K'};//应答
+	//拿出数据
+	u8 DSAddr[2] = {USART2_RX_BUF[4], USART2_RX_BUF[5]};//取出短地址
+	u8 type = USART2_RX_BUF[6];//取出命令码(设备类型码)
+	u8 len =  USART2_RX_BUF[7];//取出有效数据长度
+	u8* Data = (u8*)malloc(sizeof(u8) * len);//存放有效数据
+	for(i = 0; i < len ; i++){
+		Data[i] = USART2_RX_BUF[8+i];
 	}
-	else ReadySetTargetFlag = 0;//先设置目标短地址和端口，然后直接发送就OK
+	//回复Esp32
+	Send_Custom_Data(USART2,0xFF,2,Ack);
+	//存入待处理数据流链表
+	InsertEsp32CommandStreamNodeByEnd(Esp32CommandStreamList,DSAddr,type,len,Data,1);
+	free(Data);
 }
 
 void Analyse_Custom_Data(){
 	u8 DeviceLongAddr[8];
 	u8 DeviceShortAddr[2];
 	u8 i;//循环用
-	u8 Ack[] = {'O','K'};
+	u8 Ack[] = {'O','K'};//应答
 	u8 type;//设备类型
 
 	//把密文拿出
@@ -273,6 +282,8 @@ void Analyse_Custom_Data(){
 	}
 	//开始解密数据
 	decrypt(Data,len,teaKey);
+	
+	//存入数据流链表
 
 	//如果来自终端
 	if(Data[8] == 0x00){//设备信息命令		
@@ -290,8 +301,8 @@ void Analyse_Custom_Data(){
 		DeviceShortAddr[0] = Data[11];
 		DeviceShortAddr[1] = Data[12];
 
-		if(CheckByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
-			InsertNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
+		if(CheckDeviceNodeByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
+			InsertDeviceNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
 			//重新封装该设备信息
 			Data = (u8*)malloc(sizeof(u8) * 12);
 			Data[0] = type;
@@ -306,7 +317,7 @@ void Analyse_Custom_Data(){
 			Esp32AckFlag = 0;
 			WaitTime = 0;
 			while(Esp32AckFlag == 0){
-				if(WaitTime == 5){//超时退出
+				if(WaitTime == 3){//超时退出
 					free(Data);
 					return ;
 				}
@@ -382,9 +393,9 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 		USART_SendData(USART1, 0x0A);
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
+		free(newData);
 	}
-
-	if(USARTx == USART2){
+	else if(USARTx == USART2){
 		//发送帧头
 		USART_SendData(USART2, 0xA1);
 		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
@@ -416,6 +427,4 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 		USART_SendData(USART2, 0x0A);
 		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 	}
-
-	free(newData);
 }

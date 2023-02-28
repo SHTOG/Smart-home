@@ -6,7 +6,7 @@ void LED_Init(void)
 {            
     GPIO_InitTypeDef    GPIO_InitStructure; 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);//使能 GPIOF 时钟 
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);//使能 GPIOF 时钟 
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);//使能 GPIOA 时钟 
     //GPIOF9,F10 初始化设置 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;//LED0 和 LED1 对应 IO 口 
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式 
