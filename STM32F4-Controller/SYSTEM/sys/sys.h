@@ -45,8 +45,6 @@ typedef struct CommandStreamFromTerminal{
 extern u8 AckFlag;
 extern u8 AckJudge;
 extern Device* DeviceList;
-extern u8 Esp32AckFlag;
-extern u8 AckFlag;
 extern void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data);
 extern u8  USART1_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
 extern u16 USART1_RX_STA;         		//接收状态标记	
@@ -55,7 +53,6 @@ extern u16 USART2_RX_STA;         		//接收状态标记
 extern Device* DeviceList;
 extern u8 SelfLongAddr[8];
 extern u8 BootedTimeFlag;
-extern u8 AckFlag;
 extern u8 USART1ReciveITEnable;
 extern u8 USART2ReciveITEnable;
 extern u8 CurtainDeep;

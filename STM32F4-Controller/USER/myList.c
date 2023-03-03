@@ -88,8 +88,12 @@ void HandleTerminalStream(TerminalStream* headNode){
 				}
 				Data[10] = posNode->Data[1];
 				Data[11] = posNode->Data[2];
-				//将设备信息发给APP
-				Send_Custom_Data(USART2,0x00,12,Data);
+				//将设备信息发给APP	
+				Esp32AckFlag = 0;
+				while(Esp32AckFlag != 1){
+					Send_Custom_Data(USART2,0x00,12,Data);
+					delay_ms(300);//稍微等等
+				}
 				//等待APP的同意或拒绝信号
 				APPJudgeFlag = 0;
 				WaitTime = 0;

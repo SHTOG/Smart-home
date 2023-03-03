@@ -274,7 +274,8 @@ void Analyse_APP_Data(){
 	//回复Esp32
 	Send_Custom_Data(USART2,0xFF,2,Ack);
 	if(USART2_RX_BUF[6] == 0xFF){//如果是ESP(或APP)的应答信号		
-		if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x01) APPJudgeFlag = 1;//同意入网
+		if(USART2_RX_BUF[8] == 'O' && USART2_RX_BUF[9] == 'K') Esp32AckFlag = 1;
+		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x01) APPJudgeFlag = 1;//同意入网
 		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x00) APPJudgeFlag = 2;//拒绝入网
 		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x02){
 			Zigbee_Change_Mode(0);
