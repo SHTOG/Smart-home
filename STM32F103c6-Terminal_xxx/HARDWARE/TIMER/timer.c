@@ -1,6 +1,7 @@
 #include "timer.h"
 
-u16 WaitTime = 0;//等待时长，小于900时每秒增加1，当增加到900时判断为中控断线
+u16 MilliSecond = 0;//毫秒级计数器
+u8 WaitTime = 0;//等待时长，每秒增加1
 
 /**
   * @brief    通用定时器2中断初始化
@@ -34,20 +35,34 @@ void TIM2_Int_Init(u16 arr,u16 psc){
 	TIM_Cmd(TIM2, ENABLE); //使能 TIM2 外设
 }
 
+
+
 //定时器2中断服务函数
-//
 //每秒触发一次中断
 void TIM2_IRQHandler(void){
 	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
-		WaitTime++;
-		if(WaitTime == 900){//当15分钟了WaitTime还没有被清零，则判断为中控掉线
-			AckFlag = 0;
-			while(WaitTime == 900 && AckFlag != 1){//收到中控的应答或收到中控的请求应答就退出循环
-				Send_Custom_Data(0x00,2,SelfShortAddr);//发送设备信息命令
-				delay_ms(500);
-				IWDG_Feed();//喂狗
+		MilliSecond++;
+
+		if(Key1CD <20 )Key1CD++;
+		if(LED1FlashTime > 0){
+			if(MilliSecond % 500 == 0){
+				LED1 = !LED1;
 			}
-			WaitTime = 0;//刷新等待时间
+		}
+
+		if(MilliSecond == 1000){//以下语句每秒执行一次
+
+			if(LED1FlashTime > 0){
+				LED1FlashTime--;
+				if(LED1FlashTime == 0xFF) LED1FlashTime = 0;
+				if(LED1FlashTime == 0){
+					LED1 = 1;
+				}
+			}
+
+			if(WaitTime < 0xFF) WaitTime++;
+
+			MilliSecond = 0;
 		}
 		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
 	}

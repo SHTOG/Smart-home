@@ -28,22 +28,22 @@
             "path": "../STM32F10x_FWLib/src/misc.c"
           },
           {
-            "path": "../STM32F10x_FWLib/src/stm32f10x_dbgmcu.c"
-          },
-          {
             "path": "../STM32F10x_FWLib/src/stm32f10x_gpio.c"
           },
           {
-            "path": "../STM32F10x_FWLib/src/stm32f10x_iwdg.c"
+            "path": "../STM32F10x_FWLib/src/stm32f10x_dbgmcu.c"
           },
           {
             "path": "../STM32F10x_FWLib/src/stm32f10x_rcc.c"
           },
           {
-            "path": "../STM32F10x_FWLib/src/stm32f10x_tim.c"
+            "path": "../STM32F10x_FWLib/src/stm32f10x_usart.c"
           },
           {
-            "path": "../STM32F10x_FWLib/src/stm32f10x_usart.c"
+            "path": "../STM32F10x_FWLib/src/stm32f10x_iwdg.c"
+          },
+          {
+            "path": "../STM32F10x_FWLib/src/stm32f10x_tim.c"
           }
         ],
         "folders": []
@@ -53,6 +53,9 @@
         "files": [
           {
             "path": "../HARDWARE/IWDG/iwdg.c"
+          },
+          {
+            "path": "../HARDWARE/KEY/key.c"
           },
           {
             "path": "../HARDWARE/LED/led.c"
@@ -262,9 +265,11 @@
           "../HARDWARE/StepMotor",
           "../HARDWARE/Zigbee",
           "../HARDWARE/IWDG",
-          ".eide/deps",
           "../HARDWARE/TEA",
-          "../HARDWARE/TIMER"
+          "../HARDWARE/TIMER",
+          "../HARDWARE/KEY",
+          ".cmsis/include",
+          "RTE/_Template"
         ],
         "libList": [],
         "sourceDirList": [],

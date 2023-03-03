@@ -107,6 +107,28 @@ void USART1_IRQHandler(void){
 					USART1_RX_BUF[1] = 0;
 				}
 			}
+			else if(USART1_RX_BUF[0] == 'B'){
+				if(Res != 'U' && Res != 'S' && Res != 'Y'){
+					//接收错误,重新开始
+					USART1_RX_STA=0;
+					USART1_RX_BUF[1] = 0;
+					USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
+					USART1_RX_STA++;//数据长度++
+				}					
+				else {					
+					USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res;
+					USART1_RX_STA++;//数据长度++
+				}
+				if(USART1_RX_STA == 4 && EnterModeFlag == 0) EnterModeFlag = 1;
+				else if(USART1_RX_STA > 4){
+					//接收错误,重新开始
+					USART1_RX_STA=0;
+					USART1_RX_BUF[1] = 0;
+					USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
+					USART1_RX_STA++;//数据长度++
+				}
+					
+			}
 			else if(USART1_RX_BUF[0] == 0){
 				//如果第一个字节是0，则判断为刚开始接收第一字节数据
 				USART1_RX_BUF[1] = 0;//给数据位Zigbee命令的时候用
@@ -155,7 +177,7 @@ void Analyse_Custom_Data(){
 			AckFlag = 1;
 		}
 		else if(Data[9] == 0x00){//中控在请求应答
-			Send_Custom_Data(0xFF,2,Ack);//发送自己的设备信息
+			Send_Custom_Data(0xFF,2,Ack);//应答
 		}
 	}
 //	else if(Data[8] == 0xXX){//移植时请修改0xXX为对应的设备码，并在else内写上收到指定指令所需执行的内容
@@ -169,7 +191,7 @@ void Analyse_Custom_Data(){
   * @brief		将数据封装到私有协议并发送
   * @param		type:自身设备码
   * @param		len :有效数据长度
-  * @param		Data :有效数据内容指针（使用时应该把有效数据封装在u8数组内，然后传参的时候就输入数组名就可以了）
+  * @param		Data :有效数据内容指针（如果是设备信息命令，Data指针指向自身短地址第一位)
   * @retval		void
   */
 void Send_Custom_Data(u8 type, u8 len, u8* Data){
@@ -187,13 +209,18 @@ void Send_Custom_Data(u8 type, u8 len, u8* Data){
 	i++;
 	newData[i] = len;
 	i++;
+	if(type == 0x00){
+		newData[i] = 0x01;//这里一定要修改为对应终端的设备类型码
+		i++;
+		len--;
+	}
 	for(; j<len ;i++,j++){
 		newData[i] = Data[j];
 	}
 	for(; i < newDataLen; i++){
-		newData[i] = 0;
+		newData[i] = 1;
 	}
-	
+
 	//加密
 	encrypt(newData,newDataLen,teaKey);
 
