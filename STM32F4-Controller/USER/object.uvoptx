@@ -157,25 +157,25 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>278</LineNumber>
+          <LineNumber>372</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218624</Address>
+          <Address>134222470</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\SYSTEM\usart\usart.c</Filename>
+          <Filename>.\myList.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\object\../SYSTEM/usart/usart.c\278</Expression>
+          <Expression>\\object\myList.c\372</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>101</LineNumber>
+          <LineNumber>155</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134219926</Address>
+          <Address>134221002</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -184,14 +184,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\myList.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\object\myList.c\101</Expression>
+          <Expression>\\object\myList.c\155</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>109</LineNumber>
+          <LineNumber>371</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134219968</Address>
+          <Address>134222466</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -200,10 +200,58 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\myList.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\object\myList.c\109</Expression>
+          <Expression>\\object\myList.c\371</Expression>
         </Bp>
         <Bp>
           <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>370</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134222460</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\myList.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\object\myList.c\370</Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
+          <Type>0</Type>
+          <LineNumber>115</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134220020</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\myList.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\object\myList.c\115</Expression>
+        </Bp>
+        <Bp>
+          <Number>5</Number>
+          <Type>0</Type>
+          <LineNumber>52</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134226844</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\object\main.c\52</Expression>
+        </Bp>
+        <Bp>
+          <Number>6</Number>
           <Type>0</Type>
           <LineNumber>110</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -219,9 +267,9 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>4</Number>
+          <Number>7</Number>
           <Type>0</Type>
-          <LineNumber>110</LineNumber>
+          <LineNumber>109</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -235,9 +283,9 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>5</Number>
+          <Number>8</Number>
           <Type>0</Type>
-          <LineNumber>368</LineNumber>
+          <LineNumber>369</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -296,6 +344,11 @@
           <count>8</count>
           <WinNumber>1</WinNumber>
           <ItemText>posNodeFront</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>posNode</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>

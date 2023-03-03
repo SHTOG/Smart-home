@@ -55,13 +55,15 @@ TerminalStream* CreateTerminalStreamList(void) {
 void InsTerminalStreamNodeByEnd(TerminalStream* headNode,u8* SLAddr,u8 type, u8 len, u8* Data) {
 	TerminalStream* posNode = headNode;
 	while (posNode->next != NULL) {
+		if(ArrCmp(len,posNode->next->Data,Data) == 1 && posNode->next->len == len && posNode->next->type == type && ArrCmp(8,posNode->next->SLAddr,SLAddr) == 1) return;
 		posNode = posNode->next;
+		
 	}//定位在链表的最后一个节点
 	TerminalStream* newNode = CreateTerminalStreamNode(SLAddr,type, len, Data);
 	posNode->next = newNode;//接上
 }
 
-//处理与Esp32间通信的数据流
+//处理与终端间通信的数据流
 void HandleTerminalStream(TerminalStream* headNode){
 	u8 Ack[] = {'O','K'};
 	u8 i;
@@ -103,7 +105,7 @@ void HandleTerminalStream(TerminalStream* headNode){
 					}
 				}
 				if(APPJudgeFlag == 1){//表示APP已同意
-					
+
 					//设置透传目标为对应设备
 					Zigbee_Change_Mode(0);
 					Set_Send_Target(&posNode->Data[1],0x01);
@@ -149,6 +151,10 @@ Esp32CommandStream* CreateEsp32CommandStreamList(void) {
 void InsertEsp32CommandStreamNodeByEnd(Esp32CommandStream* headNode,u8* DSAddr, u8 type, u8 len, u8* Data, u8 DataDirection) {
 	Esp32CommandStream* posNode = headNode;
 	while (posNode->next != NULL) {
+		if(ArrCmp(len,posNode->next->Data,Data) == 1 && ArrCmp(2,posNode->next->DSAddr,DSAddr) == 1 && posNode->next->DataDirection == DataDirection) {
+			LED0 = 0;
+			return;
+		}
 		posNode = posNode->next;
 	}//定位在链表的最后一个节点
 	Esp32CommandStream* newNode = CreateEsp32CommandStreamNode(DSAddr, type, len, Data, DataDirection);
