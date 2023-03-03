@@ -1,23 +1,44 @@
 #include "led.h"   
 
 
-u8 LEDmode[8] = {0};//LED灯模式，0为普通模式，1为呼吸灯模式
-u8 direction[8] = {1,1,1,1,1,1,1,1};//呼吸灯亮度变化方向，1为增亮，0为减灭
+u8 LED1FlashTime = 0;//LED1闪烁剩余时长,归0时停止闪烁
 
-//初始化 PF9 和 PF10 为输出口.并使能这两个口的时钟            
-//LED IO 初始化 
-void LED_Init(void) 
-{
-    GPIO_InitTypeDef    GPIO_InitStructure; 
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);//使能 GPIOB 时钟 
-    //GPIOF9,F10 初始化设置 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;//LED1 对应 IO 口 
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;//推挽输出
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//50MHz 
-    GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化 GPIO
-	GPIO_SetBits(GPIOC,GPIO_Pin_13);//GPIOC13 设置高，灯灭 
+//所有独立IO口控制的LED总的初始函数
+void LED_Init(void){
+	LED1_Init();
+	LED2_Init();
 }
 
+void LED1_Init(void){
+	GPIO_InitTypeDef  GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(LED1_Clock, ENABLE);	 		//使能端口时钟
+	
+	GPIO_InitStructure.GPIO_Pin = LED1_Pin;				//LED1端口配置
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 	//推挽输出
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//IO口速度为50MHz
+	GPIO_Init(LED1_GPIO, &GPIO_InitStructure);			//根据设定参数初始化
+	GPIO_SetBits(LED1_GPIO,LED1_Pin);					//LED1输出高
+}
+
+
+void LED2_Init(void){
+	GPIO_InitTypeDef  GPIO_InitStructure;
+
+ 	RCC_APB2PeriphClockCmd(LED2_Clock, ENABLE);	 		//使能端口时钟
+
+	GPIO_InitStructure.GPIO_Pin = LED2_Pin;	    		//LED2端口配置
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 	//推挽输出
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//IO口速度为50MHz
+	GPIO_Init(LED2_GPIO, &GPIO_InitStructure);	  		//根据设定参数初始化
+	GPIO_SetBits(LED2_GPIO,LED2_Pin); 					//LED2 输出高 
+}
+
+/**
+  * @brief    用一个led的闪烁起到测试程序进程作用
+  * @param    GPIO_TypeDef* GPIOx、uint16_t GPIO_Pin: led所接io口
+  * @param    led亮灭切换所经历时间（ms）
+  * @retval    
+  */
 void LED_Test(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin,u16 xms){
     GPIO_ResetBits(GPIOx,GPIO_Pin);
     delay_ms(xms);

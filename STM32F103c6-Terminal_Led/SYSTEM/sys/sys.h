@@ -2,7 +2,20 @@
 #define __SYS_H	
 #include "stm32f10x.h"
 #include "stdlib.h"
-extern u32 WaitTime; 
+extern u8 WaitTime; 
+extern u16 PWMval[8];
+extern u8 LEDmode[8];//LED灯模式，0为普通模式，1为呼吸灯模式
+extern u8 direction[8];//呼吸灯亮度变化方向，1为增亮，0为减灭
+extern void (*TIM_SetCompare[8])(TIM_TypeDef* TIMx, uint16_t Compare1);
+extern u16 MilliSecond;//秒级计数器
+extern u16 TI0CD;//外部按键中断0消抖
+extern u16 TI1CD;//外部按键中断1消抖
+extern u16 TI2CD;//外部按键中断2消抖
+extern u16 TI3CD;//外部按键中断3消抖
+extern u8 Key1CD;
+extern u8 OnlineFlag;
+extern u8 LED1FlashTime;//LED1闪烁标志位，置1时使LED1开始闪烁
+extern u8 ZigbeeOnlineFlag;
 
 //0,不支持ucos
 //1,支持ucos

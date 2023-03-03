@@ -1,16 +1,53 @@
 #include "timer.h"
 
+u16 MilliSecond = 0;//毫秒级计数器
+u8 WaitTime = 0;//等待时长，每秒增加1
+u16 TI0CD = 0;//外部按键中断0消抖
+u16 TI1CD = 0;//外部按键中断1消抖
+u16 TI2CD = 0;//外部按键中断2消抖
+u16 TI3CD = 0;//外部按键中断3消抖
 
-u32 WaitTime = 0;//等待时长，小于900时每秒增加1，当增加到900时判断为中控断
-
-//PWM脉宽
+//PWM控制LED
 u16 PWMval[8] = {0};
-
+u8 LEDmode[8] = {0};//LED灯模式，0为普通模式，1为呼吸灯模式
+u8 direction[8] = {1,1,1,1,1,1,1,1};//呼吸灯亮度变化方向，1为增亮，0为减灭
 //TIM_SetComparex函数指针数组
 void (*TIM_SetCompare[8])(TIM_TypeDef* TIMx, uint16_t Compare1) = {TIM_SetCompare1, TIM_SetCompare2, TIM_SetCompare3, TIM_SetCompare4};
 
 /**
-  * @brief    通用定时器3输出PWM初始化(PA6)
+  * @brief    通用定时器2中断初始化
+  * @param    arr->自动重装值
+  * @param	  psc->时钟预分频数
+  * @retval   void
+  */
+
+void TIM2_Int_Init(u16 arr,u16 psc){
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE); ///使能 TIM2 时钟
+
+	//初始化定时器参数
+	TIM_TimeBaseStructure.TIM_Prescaler = psc;					//定时器分频
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数模式
+	TIM_TimeBaseStructure.TIM_Period = arr;						//自动重装载值
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;		//设置时钟分频因子
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+
+	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE );//使能TM2更新中断
+
+	//TIM2 中断优先级设置
+	NVIC_InitStructure.NVIC_IRQChannel=TIM2_IRQn; 				//定时器 2 中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x01; 	//抢占优先级 2
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x01; 		//响应优先级 3
+	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;				//使能中断
+	NVIC_Init(&NVIC_InitStructure);								//初始化 NVIC
+
+	TIM_Cmd(TIM2, ENABLE); //使能 TIM2 外设
+}
+
+/**
+  * @brief    通用定时器3输出PWM初始化(PA6、PA7、PB0、PB1)
   * @param    arr->自动重装值；psc->时钟预分频数
   * @retval   void
   */
@@ -76,44 +113,6 @@ void TIM3_PWM_Init(u16 arr,u16 psc){
 }
 
 
-/**
-  * @brief    通用定时器2中断初始化
-  * @param    arr->自动重装值
-  * @param	  psc->时钟预分频数
-  * @retval   void
-  */
-
-void TIM2_Int_Init(u16 arr,u16 psc){
-	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
-
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE); ///使能 TIM2 时钟
-
-	//初始化定时器参数
-	TIM_TimeBaseStructure.TIM_Prescaler = psc;					//定时器分频
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数模式
-	TIM_TimeBaseStructure.TIM_Period = arr;						//自动重装载值
-	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;		//设置时钟分频因子
-	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
-
-	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE );//使能TM2更新中断
-
-	//TIM2 中断优先级设置
-	NVIC_InitStructure.NVIC_IRQChannel=TIM2_IRQn; 				//定时器 2 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x01; 	//抢占优先级 2
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x01; 		//响应优先级 3
-	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;				//使能中断
-	NVIC_Init(&NVIC_InitStructure);								//初始化 NVIC
-
-	TIM_Cmd(TIM2, ENABLE); //使能 TIM2 外设
-}
-
-uint64_t MilliSecond = 0;//秒级计数器
-uint64_t TI0CD;//外部按键中断0消抖
-uint64_t TI1CD;//外部按键中断1消抖
-uint64_t TI2CD;//外部按键中断2消抖
-uint64_t TI3CD;//外部按键中断3消抖
-
 
 //定时器2中断服务函数
 //主要用于按键消抖
@@ -121,15 +120,30 @@ uint64_t TI3CD;//外部按键中断3消抖
 void TIM2_IRQHandler(void){
 	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
 		MilliSecond++;
-		WaitTime++;
-		if(WaitTime == 900000){//当15分钟了WaitTime还没有被清零，则判断为中控掉线
-			AckFlag = 0;
-			while(WaitTime == 900000 && AckFlag != 1){//收到中控的应答或收到中控的请求应答就退出循环
-				Send_Custom_Data(0x00,2,SelfShortAddr);//发送设备信息命令
-				delay_ms(500);
-				IWDG_Feed();//喂狗
+
+		if(Key1CD < 20)Key1CD++;
+		if(LED1FlashTime > 0){
+			if(MilliSecond % 500 == 0){
+				LED1 = !LED1;
 			}
-			WaitTime = 0;//刷新等待时间
+		}
+	    if(TI0CD <= MilliSecond && TI2CD <= MilliSecond && TI3CD <= MilliSecond && TI1CD <= MilliSecond){
+			TI0CD = 0;
+			TI1CD = 0;
+			TI2CD = 0;
+			TI3CD = 0;
+		}
+		if(MilliSecond == 1000){//以下语句每秒执行一次
+			if(LED1FlashTime > 0){
+				LED1FlashTime--;
+				if(LED1FlashTime == 0xFF) LED1FlashTime = 0;
+				if(LED1FlashTime == 0){
+					LED1 = 1;
+				}
+			}
+			if(WaitTime < 0xFF) WaitTime++;
+			
+			MilliSecond = 0;
 		}
 		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
 	}
