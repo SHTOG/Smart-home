@@ -38,7 +38,7 @@ void TIM2_Int_Init(u16 arr,u16 psc){
 
 
 //定时器2中断服务函数
-//每秒触发一次中断
+//每毫秒触发一次中断
 void TIM2_IRQHandler(void){
 	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
 		MilliSecond++;

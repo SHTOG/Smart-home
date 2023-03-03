@@ -70,6 +70,9 @@ int main(void){
 	Zigbee_Set_Send_Target();//设置透传目标为中控
 	Zigbee_Change_Mode(1);
 	Zigbee_Update_OnlineFlag();//这个函数执行完会得到OnlineFlag的值，为后面的while(1)提供执行方向
+	/*初始化函数请放下下面*/
+
+	/*初始化函数请放下上面*/
 	LED2 = 0;//测试用，可从核心板上直接观测到程序进入了while(1)
 	while(1){
 		if(Key1 == 0){//如果按键1被按下
@@ -82,8 +85,10 @@ int main(void){
 			}
 		}
 		IWDG_Feed();//喂狗
-		if(OnlineFlag == 1) LED2 = 0;
-		else if(OnlineFlag == 0)LED2 = 1;
+		if(OnlineFlag == 1) LED2 = 0;//测试用
+		else if(OnlineFlag == 0)LED2 = 1;//测试用
+		/*请在下面编写自己终端的代码*/
+		
 	}
 }
 
