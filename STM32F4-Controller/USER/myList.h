@@ -4,12 +4,14 @@
 #include "delay.h"
 #include "Zigbee.h"
 
-
+TerminalStream* CreateTermStreamNode(u8 type, u8 len, u8* Data); 
+TerminalStream* CreateTerminalStreamList(void);
+void InsTerminalStreamNodeByEnd(TerminalStream* headNode,u8* SLAddr,u8 type, u8 len, u8* Data);
+void HandleTerminalStream(TerminalStream* headNode);
 
 Esp32CommandStream* CreateEsp32CommandStreamNode(u8* DSAddr, u8 type, u8 len, u8* Data, u8 DataDirection) ;
 Esp32CommandStream* CreateEsp32CommandStreamList(void) ;
 void InsertEsp32CommandStreamNodeByEnd(Esp32CommandStream* headNode,u8* DSAddr, u8 type, u8 len, u8* Data, u8 DataDirection);
-void DeleteEsp32CommandStreamNodeByLongAddr(Esp32CommandStream* headNode, u8* LongAddr) ;
 void HandleEsp32CommandStream(Esp32CommandStream* headNode);
 
 Device* CreateDeviceList(void);

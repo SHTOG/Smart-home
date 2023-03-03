@@ -1,14 +1,14 @@
 #include "myList.h"
 
+u8 APPOpenNetCountDown = 0;//APP开放终端入网倒计时（单位秒），当APP打开入网许可时，倒计时增加到120，这期间终端发来的设备信息命令才会被分析执行
+u8 APPJudgeFlag = 0;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
 /**
-
   * @brief    数组拷贝
   * @param    len : 拷贝的位数(需小于dest和src所指数组的长度）
   * @param    dest: 数组拷贝目的地
   * @param    src : 源数组
   * @retval   void
   */
-
 void ArrCpy(u8 len, u8* dest, u8*src){
 	u8 i;
 	for(i = 0 ; i < len; i++){
@@ -17,7 +17,6 @@ void ArrCpy(u8 len, u8* dest, u8*src){
 }
 
 /**
-
   * @brief    数组对比
   * @param    len : 对比的前n位数(需小于dest和src所指数组的长度）
   * @param    dest: 数组对比目的地
@@ -32,6 +31,94 @@ u8 ArrCmp(u8 len, u8* dest, u8*src){
 	}
 	return 1;
 }
+/*********************************以下为对来自终端信息流处理函数*********************************/
+//创建结点
+TerminalStream* CreateTerminalStreamNode(u8* SLAddr, u8 type, u8 len, u8* Data){
+	TerminalStream* newNode = (TerminalStream*)malloc(sizeof(TerminalStream));
+	ArrCpy(8,newNode->SLAddr, SLAddr);
+	newNode->type = type;
+	newNode->len = len;
+	ArrCpy(len,newNode->Data, Data);
+	newNode->next = NULL;
+	return newNode;
+}
+
+//创建链表
+TerminalStream* CreateTerminalStreamList(void) {
+	//表头结点
+	TerminalStream* headNode = (TerminalStream*)malloc(sizeof(TerminalStream));
+	headNode->next = NULL;
+	return headNode;
+}
+
+//末端插入法
+void InsTerminalStreamNodeByEnd(TerminalStream* headNode,u8* SLAddr,u8 type, u8 len, u8* Data) {
+	TerminalStream* posNode = headNode;
+	while (posNode->next != NULL) {
+		posNode = posNode->next;
+	}//定位在链表的最后一个节点
+	TerminalStream* newNode = CreateTerminalStreamNode(SLAddr,type, len, Data);
+	posNode->next = newNode;//接上
+}
+
+//处理与Esp32间通信的数据流
+void HandleTerminalStream(TerminalStream* headNode){
+	u8 Ack[] = {'O','K'};
+	u8 i;
+	u8 Data[12];
+	TerminalStream* posNode = headNode;//执行兵，站在头结点
+	TerminalStream* posNodeFront;//后备兵,还没出场
+	if(headNode->next == NULL) return;//如果链表没有数据流，那就直接退出函数了
+	else{
+		posNodeFront = headNode;//后备兵出场
+		posNode = headNode->next;//执行兵走向下一条命令
+	}
+	while(posNode != NULL){//如果当前命令有内容，就执行
+		//处理数据
+		if(posNode->type == 0x00){//设备信息命令
+			if(CheckDeviceNodeByLongAddr(DeviceList,posNode->SLAddr,&posNode->Data[1]) == 1){//如果链表内已经有该终端，更新下数据
+				Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
+			}
+			else if(APPOpenNetCountDown > 0){//如果还在智能终端允许入网倒计时内,执行以下语句
+				//重新封装该设备信息
+				Data[0] = posNode->Data[0];
+				Data[1] = 1;
+				for(i = 0; i < 8; i++){
+					Data[2+i] = posNode->SLAddr[i];
+				}
+				Data[10] = posNode->Data[1];
+				Data[11] = posNode->Data[2];
+				//将设备信息发给APP
+				Send_Custom_Data(USART2,0x00,12,Data);
+				//等待APP的同意或拒绝信号
+				APPJudgeFlag = 0;
+				WaitTime = 0;
+				while(APPJudgeFlag == 0){//等待APP的回应，有1分钟时间
+					if(WaitTime >= 60){
+						break;//退出循环，表示APP回应超时APPJudgeFlag仍为0
+					}
+				}
+				if(APPJudgeFlag == 1){//表示APP已同意
+					
+					//设置透传目标为对应设备
+					Zigbee_Change_Mode(0);
+					Set_Send_Target(&posNode->Data[1],0x01);
+					Zigbee_Change_Mode(1);
+					Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
+					//纳入链表
+					InsertDeviceNodeByType(DeviceList,posNode->type,1,posNode->SLAddr,&posNode->Data[1]);
+				}
+			}
+		}
+		//删除该结点
+		posNodeFront->next = posNode->next;//后备兵的下一步指向执行兵的下一步
+		free(posNode);//执行兵原地蒸发
+		posNode = posNodeFront->next;//执行兵在后备兵下一步复活
+	}
+	//链表空了
+}
+/***************************************END***************************************/
+
 
 /*********************************以下为对与Esp32间通信数据链表操作函数*********************************/
 //创建结点
@@ -84,11 +171,11 @@ void HandleEsp32CommandStream(Esp32CommandStream* headNode){
 			AckFlag = 0;//清零应答标志位
 			WaitTime = 0;//倒计时重新开始计时
 			while(AckFlag != 1){
-				if(WaitTime == 3){//3秒没有收到终端应答
+				if(WaitTime >= 3){//3秒没有收到终端应答
 					SetDeviceOnlineFlagBySAddr(DeviceList,posNode->DSAddr);
 					break;
 				}
-				Send_Custom_Data(USART1,Esp32CommandStreamList->type,Esp32CommandStreamList->len,Esp32CommandStreamList->Data);//发送指令
+				Send_Custom_Data(USART1,posNode->type,posNode->len,posNode->Data);//发送指令
 				AckJudge = 1;//允许delay到一半退出delay
 				delay_ms(100);//等待终端的应答,目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
 			}
@@ -205,7 +292,7 @@ void UpdateDeviceList(Device* headNode){
 		AckFlag = 0;
 		WaitTime = 0;
 		while(AckFlag != 1){
-			if(WaitTime == 3){
+			if(WaitTime >= 3){
 				posNode->onlineFlag = 0;
 				break;
 			}
@@ -256,10 +343,11 @@ void PrintDeviceList(Device* headNode) {
   * @retval	    void
   */
 void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr){
-	Device* posNode = headNode->next;
+	Device* posNode = headNode;
 	u8 Data[12];
 	u8 i;
-	while(posNode != NULL){
+	if(posNode->next == NULL) return;
+	while(posNode->next != NULL){
 		if(ArrCmp(2,posNode->ShortAddr, ShortAddr) == 1){
 			posNode->onlineFlag = 0;
 			break ;

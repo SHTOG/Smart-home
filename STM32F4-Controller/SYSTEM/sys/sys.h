@@ -34,12 +34,13 @@ typedef struct CommandStreamWithEsp32{
 //来自终端的数据流链表结点
 typedef struct CommandStreamFromTerminal{
     //数据域
+	u8 SLAddr[8];//数据源长地址
     u8 type;//指令终端设备类型码
     u8 len;//有效数据长度
     u8 Data[MAX_DATA_FROM_ESP32_LEN];//有效数据
     //指针域
     struct CommandStreamFromTerminal* next;
-}TerminalCommandStream;
+}TerminalStream;
 
 extern u8 AckFlag;
 extern u8 AckJudge;
@@ -70,9 +71,12 @@ extern u8 ReadySetTargetFlag;//成功设置透传目标标志位，1为已设置，0为待设置
 extern u16 MilliSecond;//毫秒级计数器
 extern u8 Second;//秒级计数器
 extern u8 Minute;//分级计数器
-extern u8 WaitTime;//秒级等待应答时间,置零时开始计时,计到3停止
+extern u8 WaitTime;//秒级等待应答时间,置零时开始计时,计到255停止
 extern u8 EspWaitTime;//秒级等待应答时间,置零时开始计时,计到5停止
 extern Esp32CommandStream* Esp32CommandStreamList;//与Esp32间通信数据流链表
+extern TerminalStream* TerminalStreamList;//终端信息流链表
+extern u8 APPOpenNetCountDown;//APP开放终端入网倒计时（单位秒），当APP打开入网许可时，倒计时增加到120，这期间终端发来的设备信息命令才会被分析执行
+extern u8 APPJudgeFlag;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
 
 
 //0,不支持ucos

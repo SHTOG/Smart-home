@@ -16,6 +16,7 @@
 u8 ReadFlag = 0;//状态读取成功标志位
 Device* DeviceList = NULL;//设备长短地址数据链表
 Esp32CommandStream* Esp32CommandStreamList = NULL;//与Esp32间通信数据流链表
+TerminalStream* TerminalStreamList = NULL;//终端信息流链表
 u8 Esp32AckFlag = 0;
 
 /*End of 全局变量*/
@@ -29,25 +30,27 @@ int main(void) {
   	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分为2
 	delay_init(168);    //初始化延时函数 
 	LED_Init();			//初始化中控指示灯函数
-	Zigbee_Init(115200);
 	AT24CXX_Init();
 	while(AT24CXX_Check()){
 		LED_Test(GPIOF,GPIO_Pin_9,200);
 	}
 	AT24CXX_Clear();//测试用
-	OLED_Init();		//初始化OLED
-	OLED_Show_Chinese(2,1,welcome_C,5);//系统开机显示始迎界面，界面消失表示成功进入系统
+//	OLED_Init();		//初始化OLED
+//	OLED_Show_Chinese(2,1,welcome_C,5);//系统开机显示始迎界面，界面消失表示成功进入系统
 	USART2_Init(115200);
-	Esp32CommandStreamList = CreateEsp32CommandStreamList();
+	Esp32CommandStreamList = CreateEsp32CommandStreamList();//创建与Esp32间通信数据流链表
+	TerminalStreamList = CreateTerminalStreamList();//创建终端信息流链表
 	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateDeviceList
 	TIM3_Int_Init(10-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10次为1ms     
 	TIM2_Int_Init(10000-1,8400-1);//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数10000次为1s   
 //	OLED_Clear();
+	Zigbee_Init(115200);
 	UpdateDeviceList(DeviceList);//更新链表内所有终端在网状态
 //	PrintDeviceList(DeviceList);//开机向APP发送一次链表 //测试时注释掉这一行
 	while (1){
 		LED1 = 0;//表示正常进入系统
 	    HandleEsp32CommandStream(Esp32CommandStreamList);//处理与Esp32间通信的数据流
+		HandleTerminalStream(TerminalStreamList);
   	}
 }
 

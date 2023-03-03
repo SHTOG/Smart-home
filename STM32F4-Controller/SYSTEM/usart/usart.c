@@ -62,7 +62,7 @@ void USART1_Init(u32 bound){
 
 	//Usart1 NVIC 配置
   	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;//串口1中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0;//抢占优先级1
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority =2;		//子优先级2
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化NVIC寄存器
@@ -113,7 +113,7 @@ void USART2_Init(u32 bound){
 
 	//Usart2 NVIC 配置
  	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;//串口2中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0;//抢占优先级0（最高优先级）
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级0（最高优先级）
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority =2;		//子优先级2
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化NVIC寄存器
@@ -171,6 +171,28 @@ void USART1_IRQHandler(void){
 					USART1_RX_BUF[1] = 0;
 				}
 			}
+			else if(USART1_RX_BUF[0] == 'B'){
+				if(Res != 'U' && Res != 'S' && Res != 'Y'){
+					//接收错误,重新开始
+					USART1_RX_STA=0;
+					USART1_RX_BUF[1] = 0;
+					USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
+					USART1_RX_STA++;//数据长度++
+				}					
+				else {					
+					USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res;
+					USART1_RX_STA++;//数据长度++
+				}
+				if(USART1_RX_STA == 4 && EnterModeFlag == 0) EnterModeFlag = 1;
+				else if(USART1_RX_STA > 4){
+					//接收错误,重新开始
+					USART1_RX_STA=0;
+					USART1_RX_BUF[1] = 0;
+					USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
+					USART1_RX_STA++;//数据长度++
+				}
+					
+			}
 			else if(USART1_RX_BUF[0] == 0){
 				//如果第一个字节是0，则判断为刚开始接收第一字节数据
 				USART1_RX_BUF[1] = 0;//给数据位Zigbee命令的时候用
@@ -180,7 +202,6 @@ void USART1_IRQHandler(void){
 			else{
 				//接收错误,重新开始
 				USART1_RX_STA=0;
-				USART1_RX_BUF[0] = 0;
 				USART1_RX_BUF[1] = 0;
 				USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
 				USART1_RX_STA++;//数据长度++
@@ -249,29 +270,27 @@ void USART2_IRQHandler(void){
 }
 
 void Analyse_APP_Data(){
-	u8 i;
 	u8 Ack[] = {'O','K'};//应答
-	//拿出数据
-	u8 DSAddr[2] = {USART2_RX_BUF[4], USART2_RX_BUF[5]};//取出短地址
-	u8 type = USART2_RX_BUF[6];//取出命令码(设备类型码)
-	u8 len =  USART2_RX_BUF[7];//取出有效数据长度
-	u8* Data = (u8*)malloc(sizeof(u8) * len);//存放有效数据
-	for(i = 0; i < len ; i++){
-		Data[i] = USART2_RX_BUF[8+i];
-	}
 	//回复Esp32
 	Send_Custom_Data(USART2,0xFF,2,Ack);
-	//存入待处理数据流链表
-	InsertEsp32CommandStreamNodeByEnd(Esp32CommandStreamList,DSAddr,type,len,Data,1);
-	free(Data);
+	if(USART2_RX_BUF[6] == 0xFF){//如果是ESP(或APP)的应答信号		
+		if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x01) APPJudgeFlag = 1;//同意入网
+		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x00) APPJudgeFlag = 2;//拒绝入网
+		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x02){
+			Zigbee_Change_Mode(0);
+			OpenNet();
+			Zigbee_Change_Mode(1);
+			APPOpenNetCountDown = 120;//开放入网
+		}
+	}
+	else{//否则就是需要执行的命令
+		//存入待处理数据流链表
+		InsertEsp32CommandStreamNodeByEnd(Esp32CommandStreamList,&USART2_RX_BUF[4],USART2_RX_BUF[6],USART2_RX_BUF[7],&USART2_RX_BUF[8],1);
+	}
 }
 
 void Analyse_Custom_Data(){
-	u8 DeviceLongAddr[8];
-	u8 DeviceShortAddr[2];
 	u8 i;//循环用
-	u8 Ack[] = {'O','K'};//应答
-	u8 type;//设备类型
 
 	//把密文拿出
 	u16 len = (USART1_RX_STA&0X3FFF) - 4;//获取加密数据长度
@@ -283,65 +302,18 @@ void Analyse_Custom_Data(){
 	//开始解密数据
 	decrypt(Data,len,teaKey);
 	
-	//存入数据流链表
-
-	//如果来自终端
-	if(Data[8] == 0x00){//设备信息命令		
-
-		//这里又出现了在串口1中断在此需求串口1中断
-		//		Zigbee_Change_Mode(0);
-		//		Set_Send_Target(DeviceShortAddr,0x01);
-		//		Zigbee_Change_Mode(1);
-		Send_Custom_Data(USART1,0xFF,2,Ack);//先回应再做自己的事
-
-		for(i = 0; i < 8; i++){
-			DeviceLongAddr[i] = Data[i]; 
-		}
-		type = Data[10];
-		DeviceShortAddr[0] = Data[11];
-		DeviceShortAddr[1] = Data[12];
-
-		if(CheckDeviceNodeByLongAddr(DeviceList,DeviceLongAddr,DeviceShortAddr) == 0){
-			InsertDeviceNodeByType(DeviceList,type,1,DeviceLongAddr,DeviceShortAddr);
-			//重新封装该设备信息
-			Data = (u8*)malloc(sizeof(u8) * 12);
-			Data[0] = type;
-			Data[1] = 1;
-			for(i = 0; i < 8; i++){
-				Data[2+i] = DeviceLongAddr[i];
-			}
-			Data[10] = DeviceShortAddr[0];
-			Data[11] = DeviceShortAddr[1];
-			
-			//该设备信息发送到APP端
-			Esp32AckFlag = 0;
-			WaitTime = 0;
-			while(Esp32AckFlag == 0){
-				if(WaitTime == 3){//超时退出
-					free(Data);
-					return ;
-				}
-				Send_Custom_Data(USART2,0x00,0,NULL);//开始信号，等待应答
-				delay_ms(300);//稍微等等
-			}
-			Send_Custom_Data(USART2,0x00,12,Data);
-			
-			if(BootedTimeFlag == 1){
-				AT24CXX_Save_List(0,DeviceList);
-			}
-		}
-	}
-	else if(Data[8] == 0xFF){//设备应答命令
+	if(Data[8] == 0xFF){//设备应答命令
 		if(Data[10] == 'O' && Data[11] == 'K'){//设备应答ok
 			AckFlag = 1;
 		}
-		
 	}
-	else if(Data[8] == 0x02){//暖通反馈命令
+	else if(Data[8] == 0x02){//暖通传感器数据
 		Send_Custom_Data(USART2,0x02,Data[9],&Data[10]);//把温湿度数据发送到APP
 	}
+	else{//如果是其他数据那就存入数据流链表
+		InsTerminalStreamNodeByEnd(TerminalStreamList,&Data[0],Data[8],Data[9],&Data[10]);
+	}
 	free(Data);
-
 }
 
 void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){

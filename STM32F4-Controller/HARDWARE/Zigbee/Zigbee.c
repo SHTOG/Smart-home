@@ -91,7 +91,7 @@ void Zigbee_Change_Mode(u8 modeNum){
 void Get_State(void){
 	u8 i;
 	u8 GetState[] = {0x55, 0x03, 0x00, 0x00, 0x00};//查询Zigbee模组当前状态
-	while(GetStateFlag == 1){
+	while(GetStateFlag != 1){
 		delay_ms(10);
 		for(i = 0; i < 5;i++){
 			USART_SendData(USART1, GetState[i]);         //向串口1发送数据

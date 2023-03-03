@@ -3,7 +3,7 @@
 u16 MilliSecond = 0;//毫秒级计数器
 u8 Second = 0;//秒级计数器
 u8 Minute = 0;//分级计数器
-u8 WaitTime = 3;//秒级等待应答时间,置零时开始计时,计到3停止
+u8 WaitTime = 0xFF;//秒级等待应答时间,置零时开始计时,计到255停止
 u8 EspWaitTime = 5;//秒级等待应答时间,置零时开始计时,计到5停止
 
 /**
@@ -31,7 +31,7 @@ void TIM2_Int_Init(u16 arr,u16 psc){
 	TIM_ClearITPendingBit(TIM2,TIM_IT_Update);//清除中断位
 	//TIM3 中断优先级设置
 	NVIC_InitStructure.NVIC_IRQChannel=TIM2_IRQn; 				//定时器 2 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x02; 	//抢占优先级 2
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x03; 	//抢占优先级 2
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03; 		//响应优先级 3
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;				//使能中断
 	NVIC_Init(&NVIC_InitStructure);								//初始化 NVIC
@@ -65,7 +65,7 @@ void TIM3_Int_Init(u16 arr,u16 psc){
 	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);//清除中断位
 	//TIM3 中断优先级设置
 	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; 				//定时器 3 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x01; 	//抢占优先级 1
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x02; 	//抢占优先级 1
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x02; 		//响应优先级 2
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;				//使能中断
 	NVIC_Init(&NVIC_InitStructure);								//初始化 NVIC
@@ -79,6 +79,9 @@ void TIM3_Int_Init(u16 arr,u16 psc){
 //每秒触发一次中断
 void TIM2_IRQHandler(void){
 	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
+		if(WaitTime < 0xFF) WaitTime++;
+		if(EspWaitTime < 5) EspWaitTime++;
+		if(APPOpenNetCountDown > 0) APPOpenNetCountDown--;
 		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
 	}
 }
@@ -91,11 +94,8 @@ void TIM3_IRQHandler(void){
 		MilliSecond++;
 		if(MilliSecond == 1000){
 			Second++;//秒数增加
-			if(WaitTime < 3) WaitTime++;
-			if(EspWaitTime < 5) EspWaitTime++;
 			if(Second == 60){
 				Minute++;//分数增加
-
 				// if(Minute == 10){
 				// 	BootedTimeFlag = 1;
 				// }
@@ -113,7 +113,7 @@ void TIM3_IRQHandler(void){
 //				Zigbee_Change_Mode(1);
 //			}
 //		}
-		if(Minute % 10 == 0){//每十分钟
+		if(Minute % 10 == 0 && Minute != 0){//每十分钟
 			UpdateDeviceList(DeviceList);
 		}
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
