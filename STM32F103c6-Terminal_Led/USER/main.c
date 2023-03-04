@@ -14,11 +14,13 @@ u8 AgreeFlag  = 0;//APP同意终端入网标志位，置一时表示已得到APP的入网同意
 void Try_To_Link(){
 	LED1FlashTime = 120;//闪烁两分钟,表示正在配对中
 	Zigbee_Change_Mode(0);//Zigbee进入HEX指令模式
-	Zigbee_Restore_Factory_Setting();//Zigbee恢复出厂设置
+	if(ZigbeeOnlineFlag == 1) Zigbee_Restore_Factory_Setting();//Zigbee恢复出厂设置
+	Zigbee_Restart();
 	delay_ms(1000);
 	IWDG_Feed();//喂狗
 	Zigbee_Set_Type_To_Active_Terminal();//设置模组类型为活跃终端
 	Zigbee_Restart();
+	delay_ms(100);
 	Zigbee_Open_Net();//打开网络准备配对
 	IWDG_Feed();//喂狗
 	delay_ms(6000);//稍微等待联网
@@ -33,11 +35,12 @@ void Try_To_Link(){
 		Zigbee_Get_State();//获取设备状态
 		delay_ms(100);
 	}
-	Zigbee_Close_Net();
+//	Zigbee_Close_Net();
 	if(ZigbeeOnlineFlag == 1){//如果已经连上了协调器
+		Zigbee_Restart();
 		Zigbee_Set_Send_Target();//将透传目标改为协调器
 		Zigbee_Change_Mode(1);//进入透传模式
-
+		
 		//等待APP同意或拒绝
 		AckFlag = 0;
 		WaitTime = 0;
@@ -66,13 +69,18 @@ int main(void) {
 	TIM2_Int_Init(10-1,7200-1);//定时器时钟72M，分频系数7200，所以72M/7200=10Khz的计数频率，计数10次为1ms
 	Zigbee_Change_Mode(0);//Zigbee进入HEX指令模式
 	Zigbee_Get_State();//这个函数执行完会得到ZigbeeOnlineFlag的值
-	Zigbee_Set_Send_Target();//设置透传目标为中控
-	Zigbee_Change_Mode(1);
-	Zigbee_Update_OnlineFlag();//这个函数执行完会得到OnlineFlag的值，为后面的while(1)提供执行方向
+	if(ZigbeeOnlineFlag == 1){
+		Zigbee_Set_Send_Target();//设置透传目标为中控
+		Zigbee_Change_Mode(1);
+		Zigbee_Update_OnlineFlag();//这个函数执行完会得到OnlineFlag的值，为后面的while(1)提供执行方向
+	}
+	/*初始化函数请放下下面*/
 	TIM3_PWM_Init(500-1,72-1);//72M/72=1Mhz的计数频率,重装载值500，所以PWM频率为 1M/500=2Khz.(周期为500us)
 	EXTI0_Init();
-	LED2 = 0;//测试用，可从核心板上直接观测到程序进入了while(1)
+	/*初始化函数请放下上面*/
+
 	while (1){
+		LED2 = 0;//测试用，可从核心板上直接观测到程序进入了while(1)
 		if(Key1 == 0){//如果按键1被按下
 			WaitTime = 0;
 			while(Key1 == 0){//如果保持长按
@@ -84,7 +92,8 @@ int main(void) {
 		}
 		IWDG_Feed();//喂狗
 		if(OnlineFlag == 1){
-			LED2 = 0;
+			LED2 = 0;//测试用
+			/*请在下面编写自己终端的代码*/
 			// 电灯根据模式工作
 			for(i = 0; i < 4; i++){
 				if(LEDmode[i] == 0){
@@ -99,6 +108,8 @@ int main(void) {
 				}
 			}
 			delay_ms(2);
+			/*请在上面编写自己终端的代码*/
+			
 		}
 		else if(OnlineFlag == 0)LED2 = 1;
 	}

@@ -70,7 +70,7 @@ void Zigbee_Set_Send_Target(){
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
 		}
 	}
-	delay_ms(50);
+	delay_ms(100);
 	ReadySetTargetFlag = 1;
 }
 
