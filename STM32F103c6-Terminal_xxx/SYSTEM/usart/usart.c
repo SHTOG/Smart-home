@@ -176,6 +176,12 @@ void Analyse_Custom_Data(){
 		if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
 			AckFlag = 1;
 		}
+		else if(Data[10] == 0x00 && Data[11] == 0x00) {//拒绝入网
+			APPJudgeFlag = 2;
+		}
+		else if(Data[10] == 0x00 && Data[11] == 0x01) {//同意入网
+			APPJudgeFlag = 1;
+		}
 		else if(Data[9] == 0x00){//中控在请求应答
 			Send_Custom_Data(0xFF,2,Ack);//应答
 		}

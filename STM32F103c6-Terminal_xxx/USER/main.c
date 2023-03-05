@@ -9,7 +9,7 @@
 
 u8 ZigbeeOnlineFlag = 0;//在网Flag,置0表示没有连上协调器,置1表示已连上
 u8 OnlineFlag = 0;//在网Flag,置0表示没有连上生态,置1表示已连上
-u8 AgreeFlag  = 0;//APP同意终端入网标志位，置一时表示已得到APP的入网同意
+u8 APPJudgeFlag = 0;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
 
 void Try_To_Link(){
 	LED1FlashTime = 120;//闪烁两分钟,表示正在配对中
@@ -42,9 +42,9 @@ void Try_To_Link(){
 		Zigbee_Change_Mode(1);//进入透传模式
 		
 		//等待APP同意或拒绝
-		AckFlag = 0;
+		APPJudgeFlag = 0;
 		WaitTime = 0;
-		while(AckFlag != 1){
+		while(APPJudgeFlag == 0){
 			if(WaitTime >= 120){//120s没收到应答，直接退出，表示为没有入网
 				OnlineFlag = 0;
 				return ;
@@ -52,7 +52,8 @@ void Try_To_Link(){
 			Send_Custom_Data(0x00,3,SelfShortAddr);
 			delay_ms(500);//考虑数据接收延迟,避免频繁发送导致中控数据拥堵
 		}
-		OnlineFlag = 1;
+		if(APPJudgeFlag == 1) OnlineFlag = 1;//入网成功
+		else if(APPJudgeFlag == 2) OnlineFlag = 0;//入网失败
 	}
 	LED1FlashTime = 0;//指示灯停止闪烁
 	LED1 = 1;//熄灯
@@ -92,14 +93,14 @@ int main(void){
 		}
 		IWDG_Feed();//喂狗
 		if(OnlineFlag == 1) {
-			LED2 = 0;//测试用
+			LED1 = 0;//测试用
 			/*请在下面编写自己终端的代码*/
 			
 			
 			
 			/*请在上面编写自己终端的代码*/
 		}
-		else if(OnlineFlag == 0)LED2 = 1;//测试用
+		else if(OnlineFlag == 0)LED1 = 1;//测试用
 		
 	}
 }
