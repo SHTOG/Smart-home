@@ -21,6 +21,8 @@
 
 void USART1_Init(u32 bound);
 void USART2_Init(u32 bound);
+void USART3_Init(u32 bound);
+void Analyse_Kovro_Data(void);
 void Analyse_APP_Data(void);
 void Analyse_Custom_Data(void);
 void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data);

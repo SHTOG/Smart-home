@@ -31,8 +31,8 @@ void TIM2_Int_Init(u16 arr,u16 psc){
 	TIM_ClearITPendingBit(TIM2,TIM_IT_Update);//清除中断位
 	//TIM3 中断优先级设置
 	NVIC_InitStructure.NVIC_IRQChannel=TIM2_IRQn; 				//定时器 2 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x03; 	//抢占优先级 2
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03; 		//响应优先级 3
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x02; 	//抢占优先级 2
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x02; 		//响应优先级 2
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;				//使能中断
 	NVIC_Init(&NVIC_InitStructure);								//初始化 NVIC
 
@@ -65,8 +65,8 @@ void TIM3_Int_Init(u16 arr,u16 psc){
 	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);//清除中断位
 	//TIM3 中断优先级设置
 	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; 				//定时器 3 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x02; 	//抢占优先级 1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x02; 		//响应优先级 2
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x03; 	//抢占优先级 3
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03; 		//响应优先级 3
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;				//使能中断
 	NVIC_Init(&NVIC_InitStructure);								//初始化 NVIC
 	
@@ -75,47 +75,44 @@ void TIM3_Int_Init(u16 arr,u16 psc){
 
 
 //定时器2中断服务函数
-//根据设定时长执行指定函数
-//每秒触发一次中断
-void TIM2_IRQHandler(void){
-	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
-		if(WaitTime < 0xFF) WaitTime++;
-		if(EspWaitTime < 5) EspWaitTime++;
-		if(APPOpenNetCountDown > 0) APPOpenNetCountDown--;
-		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
-	}
-}
-
-//定时器3中断服务函数
 //提供系统时间测量
 //每毫秒触发一次中断
-void TIM3_IRQHandler(void){
-	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET){ //溢出中断
+void TIM2_IRQHandler(void){
+	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET){ //溢出中断
 		MilliSecond++;
 		if(MilliSecond == 1000){
 			Second++;//秒数增加
 			if(Second == 60){
 				Minute++;//分数增加
-				// if(Minute == 10){
-				// 	BootedTimeFlag = 1;
-				// }
+				UpdateWaitTime++;
 				if(Minute == 60){
 					Minute = 0;
 				}
 				Second = 0;
 			}
+			if(WaitTime < 0xFF) WaitTime++;
+			if(EspWaitTime < 5) EspWaitTime++;
+			if(APPOpenNetCountDown > 0) APPOpenNetCountDown--;
 			MilliSecond = 0;
 		}
-//		if(Minute % 2  == 0){//每两分钟
-//			if(CheckDeviceNodeByOnlineFlag(DeviceList)){//如果有设备不在网，则每两分钟打开一次网络
-//				Zigbee_Change_Mode(0);
-//				OpenNet();
-//				Zigbee_Change_Mode(1);
-//			}
-//		}
-		if(Minute % 10 == 0 && Minute != 0){//每十分钟
-			UpdateDeviceList(DeviceList);
+		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);  //清除中断标志位
+	}
+}
+
+
+//定时器3中断服务函数
+//根据设定时长执行指定函数
+//每秒触发一次中断
+u8 UpdateWaitTime = 0;
+void TIM3_IRQHandler(void){
+	u8 testData[3] = {23,3,90};//23.3℃、90%湿度
+	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET){ //溢出中断
+		if(UpdateWaitTime == 10){//开机时和开机后每十分钟
+			UpdateDeviceList(DeviceList);//更新链表内所有终端在网状态
+			UpdateWaitTime = 0;
 		}
+		if(DeviceList->next != NULL && Second % 5 == 0)Send_Custom_Data(USART2,0x02,3,testData);//把温湿度数据发送到APP
+		
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
 	}
 }

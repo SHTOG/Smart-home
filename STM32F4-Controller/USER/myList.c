@@ -1,12 +1,12 @@
 #include "myList.h"
 
-u8 APPOpenNetCountDown = 0;//APP¿ª·ÅÖÕ¶ËÈëÍøµ¹¼ÆÊ±£¨µ¥Î»Ãë£©£¬µ±APP´ò¿ªÈëÍøĞí¿ÉÊ±£¬µ¹¼ÆÊ±Ôö¼Óµ½120£¬ÕâÆÚ¼äÖÕ¶Ë·¢À´µÄÉè±¸ĞÅÏ¢ÃüÁî²Å»á±»·ÖÎöÖ´ĞĞ
-u8 APPJudgeFlag = 0;//À´×ÔAPPµÄÈëÍøÅĞ¶Ï±êÖ¾Î»£¬Èç¹ûÎª1£¬±íÊ¾Í¬Òâ£¬Îª2±íÊ¾¾Ü¾ø£¬ÏĞÊ±ÖÃ0
+u8 APPOpenNetCountDown = 0;//APPå¼€æ”¾ç»ˆç«¯å…¥ç½‘å€’è®¡æ—¶ï¼ˆå•ä½ç§’ï¼‰ï¼Œå½“APPæ‰“å¼€å…¥ç½‘è®¸å¯æ—¶ï¼Œå€’è®¡æ—¶å¢åŠ åˆ°120ï¼Œè¿™æœŸé—´ç»ˆç«¯å‘æ¥çš„è®¾å¤‡ä¿¡æ¯å‘½ä»¤æ‰ä¼šè¢«åˆ†ææ‰§è¡Œ
+u8 APPJudgeFlag = 0;//æ¥è‡ªAPPçš„å…¥ç½‘åˆ¤æ–­æ ‡å¿—ä½ï¼Œå¦‚æœä¸º1ï¼Œè¡¨ç¤ºåŒæ„ï¼Œä¸º2è¡¨ç¤ºæ‹’ç»ï¼Œé—²æ—¶ç½®0
 /**
-  * @brief    Êı×é¿½±´
-  * @param    len : ¿½±´µÄÎ»Êı(ĞèĞ¡ÓÚdestºÍsrcËùÖ¸Êı×éµÄ³¤¶È£©
-  * @param    dest: Êı×é¿½±´Ä¿µÄµØ
-  * @param    src : Ô´Êı×é
+  * @brief    æ•°ç»„æ‹·è´
+  * @param    len : æ‹·è´çš„ä½æ•°(éœ€å°äºdestå’Œsrcæ‰€æŒ‡æ•°ç»„çš„é•¿åº¦ï¼‰
+  * @param    dest: æ•°ç»„æ‹·è´ç›®çš„åœ°
+  * @param    src : æºæ•°ç»„
   * @retval   void
   */
 void ArrCpy(u8 len, u8* dest, u8*src){
@@ -17,12 +17,12 @@ void ArrCpy(u8 len, u8* dest, u8*src){
 }
 
 /**
-  * @brief    Êı×é¶Ô±È
-  * @param    len : ¶Ô±ÈµÄÇ°nÎ»Êı(ĞèĞ¡ÓÚdestºÍsrcËùÖ¸Êı×éµÄ³¤¶È£©
-  * @param    dest: Êı×é¶Ô±ÈÄ¿µÄµØ
-  * @param    src : Ô´Êı×é
-  * @retval   1   : Á½¸öÊı×éÇ°lenÎ»ÏàÍ¬
-  * @retval   0   : Ç°lenÎ»ÓĞ²»Í¬ÔªËØ
+  * @brief    æ•°ç»„å¯¹æ¯”
+  * @param    len : å¯¹æ¯”çš„å‰nä½æ•°(éœ€å°äºdestå’Œsrcæ‰€æŒ‡æ•°ç»„çš„é•¿åº¦ï¼‰
+  * @param    dest: æ•°ç»„å¯¹æ¯”ç›®çš„åœ°
+  * @param    src : æºæ•°ç»„
+  * @retval   1   : ä¸¤ä¸ªæ•°ç»„å‰lenä½ç›¸åŒ
+  * @retval   0   : å‰lenä½æœ‰ä¸åŒå…ƒç´ 
   */
 u8 ArrCmp(u8 len, u8* dest, u8*src){
 	u8 i;
@@ -31,8 +31,8 @@ u8 ArrCmp(u8 len, u8* dest, u8*src){
 	}
 	return 1;
 }
-/*********************************ÒÔÏÂÎª¶ÔÀ´×ÔÖÕ¶ËĞÅÏ¢Á÷´¦Àíº¯Êı*********************************/
-//´´½¨½áµã
+/*********************************ä»¥ä¸‹ä¸ºå¯¹æ¥è‡ªç»ˆç«¯ä¿¡æ¯æµå¤„ç†å‡½æ•°*********************************/
+//åˆ›å»ºç»“ç‚¹
 TerminalStream* CreateTerminalStreamNode(u8* SLAddr, u8 type, u8 len, u8* Data){
 	TerminalStream* newNode = (TerminalStream*)malloc(sizeof(TerminalStream));
 	ArrCpy(8,newNode->SLAddr, SLAddr);
@@ -43,46 +43,48 @@ TerminalStream* CreateTerminalStreamNode(u8* SLAddr, u8 type, u8 len, u8* Data){
 	return newNode;
 }
 
-//´´½¨Á´±í
+//åˆ›å»ºé“¾è¡¨
 TerminalStream* CreateTerminalStreamList(void) {
-	//±íÍ·½áµã
+	//è¡¨å¤´ç»“ç‚¹
 	TerminalStream* headNode = (TerminalStream*)malloc(sizeof(TerminalStream));
 	headNode->next = NULL;
 	return headNode;
 }
 
-//Ä©¶Ë²åÈë·¨
+//æœ«ç«¯æ’å…¥æ³•
 void InsTerminalStreamNodeByEnd(TerminalStream* headNode,u8* SLAddr,u8 type, u8 len, u8* Data) {
 	TerminalStream* posNode = headNode;
 	while (posNode->next != NULL) {
 		if(ArrCmp(len,posNode->next->Data,Data) == 1 && posNode->next->len == len && posNode->next->type == type && ArrCmp(8,posNode->next->SLAddr,SLAddr) == 1) return;
 		posNode = posNode->next;
 		
-	}//¶¨Î»ÔÚÁ´±íµÄ×îºóÒ»¸ö½Úµã
+	}//å®šä½åœ¨é“¾è¡¨çš„æœ€åä¸€ä¸ªèŠ‚ç‚¹
 	TerminalStream* newNode = CreateTerminalStreamNode(SLAddr,type, len, Data);
-	posNode->next = newNode;//½ÓÉÏ
+	posNode->next = newNode;//æ¥ä¸Š
 }
 
-//´¦ÀíÓëÖÕ¶Ë¼äÍ¨ĞÅµÄÊı¾İÁ÷
+//å¤„ç†ä¸ç»ˆç«¯é—´é€šä¿¡çš„æ•°æ®æµ
 void HandleTerminalStream(TerminalStream* headNode){
 	u8 Ack[] = {'O','K'};
+	u8 AllowAck[] = {0x00,0x01};//åŒæ„ç»ˆç«¯å…¥ç½‘æœ‰æ•ˆæ•°æ®
+	u8 RefuseAck[] = {0x00,0x00};//æ‹’ç»ç»ˆç«¯å…¥ç½‘æœ‰æ•ˆæ•°æ®
 	u8 i;
 	u8 Data[12];
-	TerminalStream* posNode = headNode;//Ö´ĞĞ±ø£¬Õ¾ÔÚÍ·½áµã
-	TerminalStream* posNodeFront;//ºó±¸±ø,»¹Ã»³ö³¡
-	if(headNode->next == NULL) return;//Èç¹ûÁ´±íÃ»ÓĞÊı¾İÁ÷£¬ÄÇ¾ÍÖ±½ÓÍË³öº¯ÊıÁË
+	TerminalStream* posNode = headNode;//æ‰§è¡Œå…µï¼Œç«™åœ¨å¤´ç»“ç‚¹
+	TerminalStream* posNodeFront;//åå¤‡å…µ,è¿˜æ²¡å‡ºåœº
+	if(headNode->next == NULL) return;//å¦‚æœé“¾è¡¨æ²¡æœ‰æ•°æ®æµï¼Œé‚£å°±ç›´æ¥é€€å‡ºå‡½æ•°äº†
 	else{
-		posNodeFront = headNode;//ºó±¸±ø³ö³¡
-		posNode = headNode->next;//Ö´ĞĞ±ø×ßÏòÏÂÒ»ÌõÃüÁî
+		posNodeFront = headNode;//åå¤‡å…µå‡ºåœº
+		posNode = headNode->next;//æ‰§è¡Œå…µèµ°å‘ä¸‹ä¸€æ¡å‘½ä»¤
 	}
-	while(posNode != NULL){//Èç¹ûµ±Ç°ÃüÁîÓĞÄÚÈİ£¬¾ÍÖ´ĞĞ
-		//´¦ÀíÊı¾İ
-		if(posNode->type == 0x00){//Éè±¸ĞÅÏ¢ÃüÁî
-			if(CheckDeviceNodeByLongAddr(DeviceList,posNode->SLAddr,&posNode->Data[1]) == 1){//Èç¹ûÁ´±íÄÚÒÑ¾­ÓĞ¸ÃÖÕ¶Ë£¬¸üĞÂÏÂÊı¾İ
-				Send_Custom_Data(USART1,0xFF,2,Ack);//ÏÈ»ØÓ¦ÔÙ×ö×Ô¼ºµÄÊÂ
+	while(posNode != NULL){//å¦‚æœå½“å‰å‘½ä»¤æœ‰å†…å®¹ï¼Œå°±æ‰§è¡Œ
+		//å¤„ç†æ•°æ®
+		if(posNode->type == 0x00){//è®¾å¤‡ä¿¡æ¯å‘½ä»¤
+			if(CheckDeviceNodeByLongAddr(DeviceList,posNode->SLAddr,&posNode->Data[1]) == 1){//å¦‚æœé“¾è¡¨å†…å·²ç»æœ‰è¯¥ç»ˆç«¯ï¼Œæ›´æ–°ä¸‹æ•°æ®
+				Send_Custom_Data(USART1,0xFF,2,Ack);//å…ˆå›åº”å†åšè‡ªå·±çš„äº‹
 			}
-			else if(APPOpenNetCountDown > 0){//Èç¹û»¹ÔÚÖÇÄÜÖÕ¶ËÔÊĞíÈëÍøµ¹¼ÆÊ±ÄÚ,Ö´ĞĞÒÔÏÂÓï¾ä
-				//ÖØĞÂ·â×°¸ÃÉè±¸ĞÅÏ¢
+			else if(APPOpenNetCountDown > 0){//å¦‚æœè¿˜åœ¨æ™ºèƒ½ç»ˆç«¯å…è®¸å…¥ç½‘å€’è®¡æ—¶å†…,æ‰§è¡Œä»¥ä¸‹è¯­å¥
+				//é‡æ–°å°è£…è¯¥è®¾å¤‡ä¿¡æ¯
 				Data[0] = posNode->Data[0];
 				Data[1] = 1;
 				for(i = 0; i < 8; i++){
@@ -90,64 +92,71 @@ void HandleTerminalStream(TerminalStream* headNode){
 				}
 				Data[10] = posNode->Data[1];
 				Data[11] = posNode->Data[2];
-				//½«Éè±¸ĞÅÏ¢·¢¸øAPP	
+				//å°†è®¾å¤‡ä¿¡æ¯å‘ç»™APP	
 				Esp32AckFlag = 0;
 				while(Esp32AckFlag != 1){
 					Send_Custom_Data(USART2,0x00,12,Data);
-					delay_ms(300);//ÉÔÎ¢µÈµÈ
+					delay_ms(300);//ç¨å¾®ç­‰ç­‰
 				}
-				//µÈ´ıAPPµÄÍ¬Òâ»ò¾Ü¾øĞÅºÅ
+				//ç­‰å¾…APPçš„åŒæ„æˆ–æ‹’ç»ä¿¡å·
 				APPJudgeFlag = 0;
 				WaitTime = 0;
-				while(APPJudgeFlag == 0){//µÈ´ıAPPµÄ»ØÓ¦£¬ÓĞ1·ÖÖÓÊ±¼ä
+				while(APPJudgeFlag == 0){//ç­‰å¾…APPçš„å›åº”ï¼Œæœ‰1åˆ†é’Ÿæ—¶é—´
 					if(WaitTime >= 60){
-						break;//ÍË³öÑ­»·£¬±íÊ¾APP»ØÓ¦³¬Ê±APPJudgeFlagÈÔÎª0
+						break;//é€€å‡ºå¾ªç¯ï¼Œè¡¨ç¤ºAPPå›åº”è¶…æ—¶APPJudgeFlagä»ä¸º0
 					}
 				}
-				if(APPJudgeFlag == 1){//±íÊ¾APPÒÑÍ¬Òâ
-
-					//ÉèÖÃÍ¸´«Ä¿±êÎª¶ÔÓ¦Éè±¸
+				if(APPJudgeFlag == 1){//è¡¨ç¤ºAPPå·²åŒæ„
+					//è®¾ç½®é€ä¼ ç›®æ ‡ä¸ºå¯¹åº”è®¾å¤‡
 					Zigbee_Change_Mode(0);
 					Set_Send_Target(&posNode->Data[1],0x01);
 					Zigbee_Change_Mode(1);
-					Send_Custom_Data(USART1,0xFF,2,Ack);//ÏÈ»ØÓ¦ÔÙ×ö×Ô¼ºµÄÊÂ
-					//ÄÉÈëÁ´±í
+					Send_Custom_Data(USART1,0xFF,2,AllowAck);//åŒæ„
+					//çº³å…¥é“¾è¡¨
 					InsertDeviceNodeByType(DeviceList,posNode->type,1,posNode->SLAddr,&posNode->Data[1]);
+				}
+				else if(APPJudgeFlag == 2){//è¡¨ç¤ºAPPå·²æ‹’ç»
+					//è®¾ç½®é€ä¼ ç›®æ ‡ä¸ºå¯¹åº”è®¾å¤‡
+					Zigbee_Change_Mode(0);
+					Set_Send_Target(&posNode->Data[1],0x01);
+					Zigbee_Change_Mode(1);
+					Send_Custom_Data(USART1,0xFF,2,RefuseAck);//æ‹’ç»
 				}
 			}
 		}
-		//É¾³ı¸Ã½áµã
-		posNodeFront->next = posNode->next;//ºó±¸±øµÄÏÂÒ»²½Ö¸ÏòÖ´ĞĞ±øµÄÏÂÒ»²½
-		free(posNode);//Ö´ĞĞ±øÔ­µØÕô·¢
-		posNode = posNodeFront->next;//Ö´ĞĞ±øÔÚºó±¸±øÏÂÒ»²½¸´»î
+		//åˆ é™¤è¯¥ç»“ç‚¹
+		posNodeFront->next = posNode->next;//åå¤‡å…µçš„ä¸‹ä¸€æ­¥æŒ‡å‘æ‰§è¡Œå…µçš„ä¸‹ä¸€æ­¥
+		free(posNode);//æ‰§è¡Œå…µåŸåœ°è’¸å‘
+		posNode = posNodeFront->next;//æ‰§è¡Œå…µåœ¨åå¤‡å…µä¸‹ä¸€æ­¥å¤æ´»
+	    HandleEsp32CommandStream(Esp32CommandStreamList);//å¤„ç†å®Œä¸€ä¸ªç»ˆç«¯çš„äº‹æƒ…ï¼Œå°±å¤„ç†ä¸Esp32é—´é€šä¿¡çš„æ•°æ®æµ
 	}
-	//Á´±í¿ÕÁË
+	//é“¾è¡¨ç©ºäº†
 }
 /***************************************END***************************************/
 
 
-/*********************************ÒÔÏÂÎª¶ÔÓëEsp32¼äÍ¨ĞÅÊı¾İÁ´±í²Ù×÷º¯Êı*********************************/
-//´´½¨½áµã
+/*********************************ä»¥ä¸‹ä¸ºå¯¹ä¸Esp32é—´é€šä¿¡æ•°æ®é“¾è¡¨æ“ä½œå‡½æ•°*********************************/
+//åˆ›å»ºç»“ç‚¹
 Esp32CommandStream* CreateEsp32CommandStreamNode(u8* DSAddr, u8 type, u8 len, u8* Data, u8 DataDirection) {
 	Esp32CommandStream* newNode = (Esp32CommandStream*)malloc(sizeof(Esp32CommandStream));
-	ArrCpy(2,newNode->DSAddr, DSAddr);//×¢Òâ£¡£¡ÒªÓÃstrcpy
+	ArrCpy(2,newNode->DSAddr, DSAddr);//æ³¨æ„ï¼ï¼è¦ç”¨strcpy
 	newNode->type = type;
 	newNode->len = len;
-	ArrCpy(len,newNode->Data, Data);//×¢Òâ£¡£¡ÒªÓÃstrcpy
+	ArrCpy(len,newNode->Data, Data);//æ³¨æ„ï¼ï¼è¦ç”¨strcpy
 	newNode->DataDirection = DataDirection;
 	newNode->next = NULL;
 	return newNode;
 }
 
-//´´½¨Á´±í
+//åˆ›å»ºé“¾è¡¨
 Esp32CommandStream* CreateEsp32CommandStreamList(void) {
-	//±íÍ·½áµã
+	//è¡¨å¤´ç»“ç‚¹
 	Esp32CommandStream* headNode = (Esp32CommandStream*)malloc(sizeof(Esp32CommandStream));
 	headNode->next = NULL;
 	return headNode;
 }
 
-//Ä©¶Ë²åÈë·¨
+//æœ«ç«¯æ’å…¥æ³•
 void InsertEsp32CommandStreamNodeByEnd(Esp32CommandStream* headNode,u8* DSAddr, u8 type, u8 len, u8* Data, u8 DataDirection) {
 	Esp32CommandStream* posNode = headNode;
 	while (posNode->next != NULL) {
@@ -156,69 +165,69 @@ void InsertEsp32CommandStreamNodeByEnd(Esp32CommandStream* headNode,u8* DSAddr, 
 			return;
 		}
 		posNode = posNode->next;
-	}//¶¨Î»ÔÚÁ´±íµÄ×îºóÒ»¸ö½Úµã
+	}//å®šä½åœ¨é“¾è¡¨çš„æœ€åä¸€ä¸ªèŠ‚ç‚¹
 	Esp32CommandStream* newNode = CreateEsp32CommandStreamNode(DSAddr, type, len, Data, DataDirection);
-	posNode->next = newNode;//½ÓÉÏ
+	posNode->next = newNode;//æ¥ä¸Š
 }
 
-//´¦ÀíÓëEsp32¼äÍ¨ĞÅµÄÊı¾İÁ÷
+//å¤„ç†ä¸Esp32é—´é€šä¿¡çš„æ•°æ®æµ
 void HandleEsp32CommandStream(Esp32CommandStream* headNode){
-	Esp32CommandStream* posNode = headNode;//Ö´ĞĞ±ø£¬Õ¾ÔÚÍ·½áµã
-	Esp32CommandStream* posNodeFront;//ºó±¸±ø,»¹Ã»³ö³¡
-	if(headNode->next == NULL) return;//Èç¹ûÁ´±íÃ»ÓĞÊı¾İÁ÷£¬ÄÇ¾ÍÖ±½ÓÍË³öº¯ÊıÁË
+	Esp32CommandStream* posNode = headNode;//æ‰§è¡Œå…µï¼Œç«™åœ¨å¤´ç»“ç‚¹
+	Esp32CommandStream* posNodeFront;//åå¤‡å…µ,è¿˜æ²¡å‡ºåœº
+	if(headNode->next == NULL) return;//å¦‚æœé“¾è¡¨æ²¡æœ‰æ•°æ®æµï¼Œé‚£å°±ç›´æ¥é€€å‡ºå‡½æ•°äº†
 	else{
-		posNodeFront = headNode;//ºó±¸±ø³ö³¡
-		posNode = headNode->next;//Ö´ĞĞ±ø×ßÏòÏÂÒ»ÌõÃüÁî
+		posNodeFront = headNode;//åå¤‡å…µå‡ºåœº
+		posNode = headNode->next;//æ‰§è¡Œå…µèµ°å‘ä¸‹ä¸€æ¡å‘½ä»¤
 	}
-	while(posNode != NULL){//Èç¹ûµ±Ç°ÃüÁîÓĞÄÚÈİ£¬¾ÍÖ´ĞĞ
-		//´¦ÀíÊı¾İ
-		if(posNode->DataDirection == 1){//ÊÇÀ´×ÔESP32µÄÃüÁî
-			/*ÉèÖÃÃüÁî·¢ËÍ·½Ïò*/
+	while(posNode != NULL){//å¦‚æœå½“å‰å‘½ä»¤æœ‰å†…å®¹ï¼Œå°±æ‰§è¡Œ
+		//å¤„ç†æ•°æ®
+		if(posNode->DataDirection == 1){//æ˜¯æ¥è‡ªESP32çš„å‘½ä»¤
+			/*è®¾ç½®å‘½ä»¤å‘é€æ–¹å‘*/
 			Zigbee_Change_Mode(0);
-			Set_Send_Target(posNode->DSAddr,0x01);//ÉèÖÃÄ¿±êÖÕ¶Ë
+			Set_Send_Target(posNode->DSAddr,0x01);//è®¾ç½®ç›®æ ‡ç»ˆç«¯
 			Zigbee_Change_Mode(1);
-			/*ÉèÖÃÍê±ÏµÈ´ı·¢ËÍ*/
-			AckFlag = 0;//ÇåÁãÓ¦´ğ±êÖ¾Î»
-			WaitTime = 0;//µ¹¼ÆÊ±ÖØĞÂ¿ªÊ¼¼ÆÊ±
+			/*è®¾ç½®å®Œæ¯•ç­‰å¾…å‘é€*/
+			AckFlag = 0;//æ¸…é›¶åº”ç­”æ ‡å¿—ä½
+			WaitTime = 0;//å€’è®¡æ—¶é‡æ–°å¼€å§‹è®¡æ—¶
 			while(AckFlag != 1){
-				if(WaitTime >= 3){//3ÃëÃ»ÓĞÊÕµ½ÖÕ¶ËÓ¦´ğ
+				if(WaitTime >= 3){//3ç§’æ²¡æœ‰æ”¶åˆ°ç»ˆç«¯åº”ç­”
 					SetDeviceOnlineFlagBySAddr(DeviceList,posNode->DSAddr);
 					break;
 				}
-				Send_Custom_Data(USART1,posNode->type,posNode->len,posNode->Data);//·¢ËÍÖ¸Áî
-				AckJudge = 1;//ÔÊĞídelayµ½Ò»°ëÍË³ödelay
-				delay_ms(100);//µÈ´ıÖÕ¶ËµÄÓ¦´ğ,Ä¿Ç°ÊÇÔÚÄÚ²¿Ö²ÈëÁËÒ»¸ö¶ÔAckJudge£¬ºóÆÚ¿ÉÒÔÓÃUCOSµÄÈÎÎñÂÖ×ªµ÷¶ÈÓÅ»¯CPU×ÊÔ´
+				Send_Custom_Data(USART1,posNode->type,posNode->len,posNode->Data);//å‘é€æŒ‡ä»¤
+				AckJudge = 1;//å…è®¸delayåˆ°ä¸€åŠé€€å‡ºdelay
+				delay_ms(100);//ç­‰å¾…ç»ˆç«¯çš„åº”ç­”,ç›®å‰æ˜¯åœ¨å†…éƒ¨æ¤å…¥äº†ä¸€ä¸ªå¯¹AckJudgeï¼ŒåæœŸå¯ä»¥ç”¨UCOSçš„ä»»åŠ¡è½®è½¬è°ƒåº¦ä¼˜åŒ–CPUèµ„æº
 			}
-			AckJudge = 0;//½ûÖ¹delayµ½Ò»°ëÍË³ödelay
+			AckJudge = 0;//ç¦æ­¢delayåˆ°ä¸€åŠé€€å‡ºdelay
 		}
-		else if(posNode->DataDirection == 2){//×¼±¸·¢ÍùESP32µÄÊı¾İ
+		else if(posNode->DataDirection == 2){//å‡†å¤‡å‘å¾€ESP32çš„æ•°æ®
 			Send_Custom_Data(USART2,posNode->type,posNode->len,posNode->Data);
 		}
-		//É¾³ı¸Ã½áµã
-		posNodeFront->next = posNode->next;//ºó±¸±øµÄÏÂÒ»²½Ö¸ÏòÖ´ĞĞ±øµÄÏÂÒ»²½
-		free(posNode);//Ö´ĞĞ±øÔ­µØÕô·¢
-		posNode = posNodeFront->next;//Ö´ĞĞ±øÔÚºó±¸±øÏÂÒ»²½¸´»î
+		//åˆ é™¤è¯¥ç»“ç‚¹
+		posNodeFront->next = posNode->next;//åå¤‡å…µçš„ä¸‹ä¸€æ­¥æŒ‡å‘æ‰§è¡Œå…µçš„ä¸‹ä¸€æ­¥
+		free(posNode);//æ‰§è¡Œå…µåŸåœ°è’¸å‘
+		posNode = posNodeFront->next;//æ‰§è¡Œå…µåœ¨åå¤‡å…µä¸‹ä¸€æ­¥å¤æ´»
 	}
-	//Á´±í¿ÕÁË
+	//é“¾è¡¨ç©ºäº†
 }
 /***************************************END***************************************/
 
 
-/*********************************ÒÔÏÂÎª¶ÔÉè±¸ĞÅÏ¢Á´±í²Ù×÷º¯Êı*********************************/
-//´´½¨½áµã
+/*********************************ä»¥ä¸‹ä¸ºå¯¹è®¾å¤‡ä¿¡æ¯é“¾è¡¨æ“ä½œå‡½æ•°*********************************/
+//åˆ›å»ºç»“ç‚¹
 Device* CreateDeviceNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
 	Device* newNode = (Device*)malloc(sizeof(Device));
 	newNode->type = type;
 	newNode->onlineFlag = onlineFlag;
-	ArrCpy(8,newNode->LongAddr, LongAddr);//×¢Òâ£¡£¡ÒªÓÃstrcpy
-	ArrCpy(2,newNode->ShortAddr, ShortAddr);//×¢Òâ£¡£¡ÒªÓÃstrcpy
+	ArrCpy(8,newNode->LongAddr, LongAddr);//æ³¨æ„ï¼ï¼è¦ç”¨strcpy
+	ArrCpy(2,newNode->ShortAddr, ShortAddr);//æ³¨æ„ï¼ï¼è¦ç”¨strcpy
 	newNode->next = NULL;
 	return newNode;
 }
 
 Device* CreateDeviceList(void) {
-	//´´½¨±íÍ·
-	Device* headNode = (Device*)malloc(sizeof(Device));//Ö¸Õë±ä³ÉÁË½á¹¹Ìå±äÁ¿
+	//åˆ›å»ºè¡¨å¤´
+	Device* headNode = (Device*)malloc(sizeof(Device));//æŒ‡é’ˆå˜æˆäº†ç»“æ„ä½“å˜é‡
 	headNode->type = 0;
 	headNode->next = NULL;
 	return headNode;
@@ -230,9 +239,9 @@ void InsertDeviceNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAd
 	while (posNode->type <= type && posNode->next != NULL) {
 		posNodeFront = posNode;
 		posNode = posNode->next;
-	}//¶¨Î»ÔÚtypeÎªÖ¸¶¨Êı×Ö»òµÄ×îºóÒ»¸ö
+	}//å®šä½åœ¨typeä¸ºæŒ‡å®šæ•°å­—æˆ–çš„æœ€åä¸€ä¸ª
 	Device* newNode = CreateDeviceNode(type,onlineFlag, LongAddr, ShortAddr);
-	if(posNode->type > type){//Èç¹û²»ÊÇ×îºóÒ»¸ö
+	if(posNode->type > type){//å¦‚æœä¸æ˜¯æœ€åä¸€ä¸ª
 		posNodeFront->next = newNode;
 		newNode->next = posNode;
 	}else{
@@ -241,9 +250,18 @@ void InsertDeviceNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAd
 }
 
 void DeleteDeviceNodeByLongAddr(Device* headNode, u8* LongAddr) {
-	Device* posNode = headNode->next;
-	Device* posNodeFront = headNode;
-	while (ArrCmp(8,posNode->LongAddr, LongAddr) != 0) {
+	Device* posNode;
+	Device* posNodeFront;
+	if(headNode->next == NULL){
+		return;//è®¾å¤‡ä¿¡æ¯é“¾è¡¨æ˜¯ç©ºçš„,ç›´æ¥é€€å‡ºäº†
+	}
+	//å¦‚æœé“¾è¡¨å†…æœ‰è®¾å¤‡
+	posNodeFront = headNode;
+	posNode = headNode->next;
+	while (ArrCmp(8,posNode->LongAddr, LongAddr) != 1) {
+		if(posNode->next == NULL){
+			return;//æ²¡æœ‰æ‰¾åˆ°æŒ‡å®šé•¿åœ°å€è®¾å¤‡
+		}
 		posNodeFront = posNode;
 		posNode = posNode->next;
 	}
@@ -251,50 +269,43 @@ void DeleteDeviceNodeByLongAddr(Device* headNode, u8* LongAddr) {
 	free(posNode);
 }
 
+/**
+  * @brief		æŸ¥æ‰¾é“¾è¡¨ä¸­æ˜¯å¦æœ‰ç›®æ ‡é•¿åœ°å€çš„ç»ˆç«¯
+  * @param		headNodeï¼šé“¾è¡¨è¡¨å¤´
+  * @param		LongAddrï¼šæŸ¥è¯¢æ¡ä»¶->é•¿åœ°å€
+  * @param		ShortAddrï¼šæ›´æ–°åçŸ­åœ°å€çŸ­åœ°å€
+  * @retval	    1->æœ‰
+  * @retval	    0->æ— 
+  */
+
 u8 CheckDeviceNodeByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
 	Device* posNode = headNode;
-	if(posNode->next == NULL) return 0;//¿ÕÁ´±í£¬Ã»ÓĞ²éµ½¸Ã³¤µØÖ·µÄÉè±¸
+	if(posNode->next == NULL) return 0;//ç©ºé“¾è¡¨ï¼Œæ²¡æœ‰æŸ¥åˆ°è¯¥é•¿åœ°å€çš„è®¾å¤‡
 	while(posNode != NULL){
 		if(ArrCmp(8,posNode->LongAddr, LongAddr) == 1) break;
-		if(posNode->next == NULL) return 0;//Ã»ÓĞ²éµ½¸Ã³¤µØÖ·µÄÉè±¸
+		if(posNode->next == NULL) return 0;//æ²¡æœ‰æŸ¥åˆ°è¯¥é•¿åœ°å€çš„è®¾å¤‡
 		posNode = posNode->next;
 	}
-	//ÕÒµ½ÁË,±êÖ¾ÈëÍø£¬¸üĞÂ¶ÌµØÖ·
+	//æ‰¾åˆ°äº†,æ ‡å¿—å…¥ç½‘ï¼Œæ›´æ–°çŸ­åœ°å€
 	posNode->onlineFlag = 1;
 	posNode->ShortAddr[0] = ShortAddr[0];
 	posNode->ShortAddr[1] = ShortAddr[1];
-	return 1;//²éµ½ÁË¸Ã³¤µØÖ·µÄÉè±¸
-}
-
-/**
-  * @brief		²éÕÒÁ´±íÖĞÊÇ·ñÓĞÎ´ÁªÍøÉè±¸
-  * @param		Device* headNode£ºÁ´±í±íÍ·
-  * @retval	    1->ÓĞÎ´ÁªÍøÉè±¸
-  * @retval	    0->ÎŞÎ´ÁªÍøÉè±¸
-  */
-
-u8 CheckDeviceNodeByOnlineFlag(Device* headNode) {
-	Device* posNode = headNode->next;
-	while (posNode != NULL){
-		if(posNode->onlineFlag != 0) posNode = posNode->next;
-		else{
-			if(posNode->onlineFlag == 0){
-				return 1;
-			}
-		}
-	}
-	return 0;
+	return 1;//æŸ¥åˆ°äº†è¯¥é•¿åœ°å€çš„è®¾å¤‡
 }
 
 
 /**
-  * @brief		¸üĞÂÁ´±íÖĞÉè±¸ÁªÍø×´Ì¬
-  * @param		Device* headNode£ºÁ´±í±íÍ·
+  * @brief		æ›´æ–°é“¾è¡¨ä¸­è®¾å¤‡è”ç½‘çŠ¶æ€
+  * @param		Device* headNodeï¼šé“¾è¡¨è¡¨å¤´
   * @retval	    void
   */
 void UpdateDeviceList(Device* headNode){
-
-	Device* posNode = headNode->next;
+	u8 i;
+	u8 changeFlag = 0;//ç»ˆç«¯åœ¨ç½‘æƒ…å†µå‘æ˜¯å¦ç”Ÿå˜åŠ¨æ ‡å¿—ä½,ç½®1è¡¨ç¤ºæœ‰
+	Device* posNode = headNode;
+	u8 Data[12];
+	if(headNode->next == NULL) return;//å¦‚æœè®¾å¤‡é“¾è¡¨ä¸ºç©ºï¼Œé‚£å°±ç›´æ¥é€€å‡º
+	posNode = posNode->next;
 	while (posNode != NULL){
 		Zigbee_Change_Mode(0);
 		Set_Send_Target(posNode->ShortAddr,0x01);
@@ -302,54 +313,81 @@ void UpdateDeviceList(Device* headNode){
 		AckFlag = 0;
 		WaitTime = 0;
 		while(AckFlag != 1){
-			if(WaitTime >= 3){
-				posNode->onlineFlag = 0;
+			if(WaitTime >= 2){//ç­‰å¾…è¶…è¿‡2s
+				posNode->onlineFlag = 0;//ç½®0åœ¨ç½‘æ ‡å¿—ä½
+				//å°è£…è¯¥ä¸åœ¨çº¿è®¾å¤‡ä¿¡æ¯ç»™åˆ°APP
+				Data[0] = posNode->type;
+				Data[1] = posNode->onlineFlag;
+				for(i = 0; i < 8; i++){
+					Data[2+i] = posNode->LongAddr[i];
+				}
+				Data[i] = posNode->ShortAddr[0];
+				i++;
+				Data[i] = posNode->ShortAddr[1];
+				Esp32AckFlag = 0;
+				EspWaitTime = 0;
+				while(Esp32AckFlag == 0){
+					if(EspWaitTime == 3){//è¶…æ—¶é€€å‡º,Espæ‰çº¿
+						break; 
+					}
+					Send_Custom_Data(USART2,0x00,12,Data);//å‘é€æ•°æ®
+					delay_ms(200);//ç¨å¾®ç­‰ç­‰
+				}
+				changeFlag = 1;//ç»ˆç«¯åœ¨çº¿æƒ…å†µå‘ç”Ÿå˜åŠ¨
 				break;
 			}
-			Send_Custom_Data(USART1,0xFF,0,NULL);//ÇëÇóÓ¦´ğ
+			Send_Custom_Data(USART1,0xFF,0,NULL);//è¯·æ±‚åº”ç­”
 			AckJudge = 1;
-			delay_ms(100);//Ä¿Ç°ÊÇÔÚÄÚ²¿Ö²ÈëÁËÒ»¸öAckJudge£¬ºóÆÚ¿ÉÒÔÓÃUCOSµÄÈÎÎñÂÖ×ªµ÷¶ÈÓÅ»¯CPU×ÊÔ´
+			delay_ms(100);//ç›®å‰æ˜¯åœ¨å†…éƒ¨æ¤å…¥äº†ä¸€ä¸ªAckJudgeï¼ŒåæœŸå¯ä»¥ç”¨UCOSçš„ä»»åŠ¡è½®è½¬è°ƒåº¦ä¼˜åŒ–CPUèµ„æº
+		}
+		if(AckFlag == 1 && posNode->onlineFlag == 0){
+			posNode->onlineFlag = 1;
+			changeFlag = 1;//ç»ˆç«¯åœ¨çº¿æƒ…å†µå‘ç”Ÿå˜åŠ¨
 		}
 		AckJudge = 0;
+		posNode = posNode->next;
+	}
+	if(changeFlag == 1){
+		AT24CXX_Save_List(0,headNode);
+	}
+}
+
+/**
+  * @brief		å°†é“¾è¡¨å†…å®¹è¾“å‡ºåˆ°Esp
+  * @param		Device* headNodeï¼šé“¾è¡¨è¡¨å¤´
+  * @retval	    void
+  */
+
+void PrintDeviceList(Device* headNode) {
+	Device* posNode = headNode->next;
+	u8 Data[12];
+	u8 i;
+	while (posNode != NULL) {
+		Data[0] = posNode->type;
+		Data[1] = posNode->onlineFlag;
+		for(i = 0; i < 8; i++){
+			Data[2+i] = posNode->LongAddr[i];
+		}
+		Data[i] = posNode->ShortAddr[0];
+		i++;
+		Data[i] = posNode->ShortAddr[1];
+		Esp32AckFlag = 0;
+		EspWaitTime = 0;
+		while(Esp32AckFlag == 0){
+			if(EspWaitTime == 5){//è¶…æ—¶é€€å‡º,APPä¸åœ¨çº¿
+				return ;
+			}
+			Send_Custom_Data(USART2,0x00,12,Data);//å‘é€æ•°æ®
+			delay_ms(200);//ç¨å¾®ç­‰ç­‰
+		}
+		delay_ms(1000);//è¿™é‡Œå»¶æ—¶ä¸€ä¸ª1s
 		posNode = posNode->next;
 	}
 }
 
 /**
-  * @brief		½«Á´±íÄÚÈİÊä³öµ½Esp
-  * @param		Device* headNode£ºÁ´±í±íÍ·
-  * @retval	    void
-  */
-
-void PrintDeviceList(Device* headNode) {
-	Device* pMove = headNode->next;
-	u8 Data[12];
-	u8 i;
-	while (pMove != NULL) {
-		Data[0] = pMove->type;
-		Data[1] = pMove->onlineFlag;
-		for(i = 0; i < 8; i++){
-			Data[2+i] = pMove->LongAddr[i];
-		}
-		Data[i] = pMove->ShortAddr[0];
-		i++;
-		Data[i] = pMove->ShortAddr[1];
-		Esp32AckFlag = 0;
-		EspWaitTime = 0;
-		while(Esp32AckFlag == 0){
-			if(EspWaitTime == 5){//³¬Ê±ÍË³ö,Ó¦¸ÃÊÇAPP²»ÔÚÏß£¬esp¼ÄÁË
-				return ;
-			}
-			Send_Custom_Data(USART2,0x00,0,Data);//¿ªÊ¼ĞÅºÅ£¬µÈ´ıÓ¦´ğ
-			delay_ms(300);//ÉÔÎ¢µÈµÈ
-		}
-		Send_Custom_Data(USART2,0x00,12,Data);
-		pMove = pMove->next;
-	}
-}
-/**
-  * @brief		½«Á´±íÖĞÖ¸¶¨¶ÌµØÖ·Éè±¸ÉèÖÃÎªÎ´ÁªÍø
-  * @param		Device* headNode£ºÁ´±í±íÍ·
+  * @brief		å°†é“¾è¡¨ä¸­æŒ‡å®šçŸ­åœ°å€è®¾å¤‡è®¾ç½®ä¸ºæœªè”ç½‘
+  * @param		Device* headNodeï¼šé“¾è¡¨è¡¨å¤´
   * @retval	    void
   */
 void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr){
@@ -363,20 +401,20 @@ void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr){
 			break ;
 		}
 		else posNode = posNode->next;
-		if(posNode == NULL) return;//Á´±íÄÚÃ»ÓĞ·ûºÏÌõ¼şµÄ½áµã
+		if(posNode == NULL) return;//é“¾è¡¨å†…æ²¡æœ‰ç¬¦åˆæ¡ä»¶çš„ç»“ç‚¹
 	}
 
-	//¸æËßEsp32£¨Ò²ÊÇ¸æËßAPPÓĞ¸öÖÕ¶ËÏÂÏßÁË£©
+	//å‘Šè¯‰Esp32ï¼ˆä¹Ÿæ˜¯å‘Šè¯‰APPæœ‰ä¸ªç»ˆç«¯ä¸‹çº¿äº†ï¼‰
 	Esp32AckFlag = 0;
 	EspWaitTime = 0;
 	while(Esp32AckFlag == 0){
-		if(EspWaitTime == 5){//³¬Ê±ÍË³ö
+		if(EspWaitTime == 5){//è¶…æ—¶é€€å‡º
 			return ;
 		}
-		Send_Custom_Data(USART2,0x00,0,NULL);//¿ªÊ¼ĞÅºÅ£¬µÈ´ıÓ¦´ğ
-		delay_ms(200);//ÉÔÎ¢µÈµÈ
+		Send_Custom_Data(USART2,0x00,0,NULL);//å¼€å§‹ä¿¡å·ï¼Œç­‰å¾…åº”ç­”
+		delay_ms(200);//ç¨å¾®ç­‰ç­‰
 	}
-	//´ò°üÊı¾İ
+	//æ‰“åŒ…æ•°æ®
 	Data[0] = posNode->type;
 	Data[1] = posNode->onlineFlag;
 	for(i = 0; i < 8; i++){
@@ -385,6 +423,6 @@ void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr){
 	Data[i] = posNode->ShortAddr[0];
 	i++;
 	Data[i] = posNode->ShortAddr[1];
-	Send_Custom_Data(USART2,0x00,12,Data);//·¢¸øEsp
+	Send_Custom_Data(USART2,0x00,12,Data);//å‘ç»™Esp
 }
 /***************************************END***************************************/

@@ -50,6 +50,8 @@ extern u8  USART1_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符
 extern u16 USART1_RX_STA;         		//接收状态标记	
 extern u8  USART2_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
 extern u16 USART2_RX_STA;         		//接收状态标记	
+extern u8  USART3_RX_BUF[200]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
+extern u16 USART3_RX_STA;         		//接收状态标记	
 extern Device* DeviceList;
 extern u8 SelfLongAddr[8];
 extern u8 BootedTimeFlag;
@@ -74,7 +76,8 @@ extern Esp32CommandStream* Esp32CommandStreamList;//与Esp32间通信数据流链表
 extern TerminalStream* TerminalStreamList;//终端信息流链表
 extern u8 APPOpenNetCountDown;//APP开放终端入网倒计时（单位秒），当APP打开入网许可时，倒计时增加到120，这期间终端发来的设备信息命令才会被分析执行
 extern u8 APPJudgeFlag;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
-
+extern u8 PrintDeviceListFlag;
+extern u8 UpdateWaitTime;
 
 //0,不支持ucos
 //1,支持ucos

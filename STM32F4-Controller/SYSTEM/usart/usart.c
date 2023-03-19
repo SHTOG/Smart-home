@@ -4,6 +4,7 @@
 //接收缓冲,最大200个字节.	
 u8 USART1_RX_BUF[200];     
 u8 USART2_RX_BUF[200];     
+u8 USART3_RX_BUF[200];     
 
 //接收状态
 //bit15，	接收完成标志
@@ -11,10 +12,12 @@ u8 USART2_RX_BUF[200];
 //bit13~0，	接收到的有效字节数目
 u16 USART1_RX_STA=0;       //接收状态标记	
 u16 USART2_RX_STA=0;       //接收状态标记	
+u16 USART3_RX_STA=0;       //接收状态标记	
 
 //标志位
 u8 USART1ReciveITEnable = 1;//串口1接收中断允许位,置1时允许，0为禁止
 u8 USART2ReciveITEnable = 1;//串口2接收中断允许位,置1时允许，0为禁止
+u8 USART3ReciveITEnable = 1;//串口3接收中断允许位,置1时允许，0为禁止
 u8 BootedTimeFlag = 0;//开机时长记录flag,开机满10分钟就置1
 u8 AckFlag = 0;//来自终端的应答标志位，收到应答置1处理完马上归0
 u8 AckJudge = 0;//在delay函数内植入这个判断标志位，为1时delay_ms期间如果收到终端的应答就直接退出延时
@@ -62,7 +65,7 @@ void USART1_Init(u32 bound){
 
 	//Usart1 NVIC 配置
   	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;//串口1中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0;//抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0;//抢占优先级0（最高优先级）
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority =2;		//子优先级2
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化NVIC寄存器
@@ -113,14 +116,54 @@ void USART2_Init(u32 bound){
 
 	//Usart2 NVIC 配置
  	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;//串口2中断通道
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级0（最高优先级）
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级1
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority =2;		//子优先级2
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化NVIC寄存器
-
-	
 }
 
+void USART3_Init(u32 bound){
+	//声明一下结构体
+	GPIO_InitTypeDef GPIO_InitStructure;
+	USART_InitTypeDef USART_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+	
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE); //使能GPIOB时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3,ENABLE);//使能USART3时钟
+
+	//USART3对应引脚复用映射
+	GPIO_PinAFConfig(GPIOB,GPIO_PinSource10,GPIO_AF_USART3); //GPIOB10复用为USART3
+	GPIO_PinAFConfig(GPIOB,GPIO_PinSource11,GPIO_AF_USART3); //GPIOB11复用为USART3
+	
+	//USART2的GPIO配置
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11; //选定对应引脚
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//速度100MHz
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; //推挽复用输出
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //上拉
+	GPIO_Init(GPIOB,&GPIO_InitStructure); //初始化GPIO
+
+
+   //USART2 初始化设置
+	USART_InitStructure.USART_BaudRate = bound;//波特率设置
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
+	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
+	USART_Init(USART3, &USART_InitStructure); //初始化串口3
+	
+	USART_Cmd(USART3, ENABLE);  //使能串口3
+	USART_ClearFlag(USART3, USART_FLAG_TC);
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);//开启相关中断
+
+	//Usart2 NVIC 配置
+ 	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;//串口3中断通道
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority =2;		//子优先级2
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
+	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化NVIC寄存器
+}
 
 
 /**
@@ -233,9 +276,16 @@ void USART2_IRQHandler(void){
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET && USART2ReciveITEnable){//接收中断(接收到的数据必须是0x0d 0x0a结尾)
 		Res = USART_ReceiveData(USART2);//(USART2->DR);	//读取接收到的数据
 		if(USART2_RX_BUF[0] == 0xA1){//如果接收到的是来自ESP32的数据
+			//如果接收到的是自定义传输的数据格式
 			if(USART2_RX_STA&0x4000)//接收到了0x0d
 			{
-				if(Res!=0x0a)USART2_RX_STA=0;//接收错误,重新开始
+				if(Res!=0x0a){
+					USART2_RX_STA &= 0xBFFF;
+					USART2_RX_BUF[USART2_RX_STA&0X3FFF]=0X0D ;//把0x0D放到USART1_RX_BUF的倒数第二位
+					USART2_RX_STA++;//数据长度++
+					USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART1_RX_BUF的最后一位
+					USART2_RX_STA++;//数据长度++
+				}
 				else USART2_RX_STA|=0x8000;	//接收完成了 
 			}
 			else //还没收到0X0D
@@ -243,7 +293,7 @@ void USART2_IRQHandler(void){
 				if(Res==0x0d)USART2_RX_STA|=0x4000;
 				else
 				{
-					USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART2_RX_BUF的最后一位	
+					USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART1_RX_BUF的最后一位	
 					USART2_RX_STA++;//数据长度++
 					if(USART2_RX_STA>(USART_REC_LEN-1))USART2_RX_STA=0;//接收数据错误,重新开始接收	  
 				}
@@ -261,7 +311,11 @@ void USART2_IRQHandler(void){
 			USART2_RX_STA++;//数据长度++
 		}
 		if(USART2_RX_STA&0x8000){//接收完成一段数据
-			Analyse_APP_Data();//分析数据
+			if(USART2_RX_BUF[0] == 0xA1 && 
+			   USART2_RX_BUF[1] == 0xA2 && 
+			   USART2_RX_BUF[2] == 0xA3 && 
+			   USART2_RX_BUF[3] == 0xA4) Analyse_APP_Data();//分析数据
+			
 			//归零接收完成标志和伪接收寄存器准备重新接收
 			USART2_RX_STA=0;
 			USART2_RX_BUF[0] = 0;
@@ -269,24 +323,109 @@ void USART2_IRQHandler(void){
  	} 
 }
 
+/**
+  * @brief		串口3中断服务程序
+  * @param		void
+  * @retval		void
+  */
+void USART3_IRQHandler(void){
+	u8 Res;
+	//接收中断(接收到的数据必须是0x0d 0x0a结尾)
+	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET && USART3ReciveITEnable){
+		Res = USART_ReceiveData(USART3);//(USART3->DR);	//读取接收到的数据
+		if(USART3_RX_BUF[0] == 0xB1){//如果接收到的是来自语音模块的数据
+			//如果接收到的是自定义传输的数据格式
+			if(USART3_RX_STA&0x4000)//接收到了0x0d
+			{
+				if(Res!=0x0a){
+					USART3_RX_STA &= 0xBFFF;
+					USART3_RX_BUF[USART3_RX_STA&0X3FFF]=0X0D ;//把0x0D放到USART3_RX_BUF的倒数第二位
+					USART3_RX_STA++;//数据长度++
+					USART3_RX_BUF[USART3_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART3_RX_BUF的最后一位
+					USART3_RX_STA++;//数据长度++
+				}
+				else USART3_RX_STA|=0x8000;	//接收完成了 
+			}
+			else //还没收到0X0D
+			{
+				if(Res==0x0d)USART3_RX_STA|=0x4000;
+				else
+				{
+					USART3_RX_BUF[USART3_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART3_RX_BUF的最后一位	
+					USART3_RX_STA++;//数据长度++
+					if(USART3_RX_STA>(USART_REC_LEN-1))USART3_RX_STA=0;//接收数据错误,重新开始接收	  
+				}
+			}
+		}
+		else if(USART3_RX_BUF[0] == 0){
+			//如果第一个字节是0，则判断为刚开始接收第一字节数据
+			USART3_RX_BUF[0]=Res ;//把当前接收到的数据放到USART3_RX_BUF的第一位
+			USART3_RX_STA++;//数据长度++
+		}
+		else{
+			//接收错误,重新开始
+			USART3_RX_STA=0;
+			USART3_RX_BUF[0]=Res ;//把当前接收到的数据放到USART3_RX_BUF的第一位
+			USART3_RX_STA++;//数据长度++
+		}
+		if(USART3_RX_STA&0x8000){//接收完成一段数据
+			if(USART2_RX_BUF[0] == 0xB1 && 
+			   USART2_RX_BUF[1] == 0xB2 && 
+			   USART2_RX_BUF[2] == 0xB3 && 
+			   USART2_RX_BUF[3] == 0xB4) Analyse_Kovro_Data();//分析数据
+			
+			//归零接收完成标志和伪接收寄存器准备重新接收
+			USART3_RX_STA=0;
+			USART3_RX_BUF[0] = 0;
+		}
+ 	}
+}
+
+
+void Analyse_Kovro_Data(void){
+	u8 Ack[] = {'O','K'};//应答
+//	u8 EndAck[] = {'E','N','D'};//数据流结束应答
+	u8 i;
+	//回复Kovro
+	Send_Custom_Data(USART3,0xFF,2,Ack);
+	for(i = 0; i < 8; i++){
+		if(USART3_RX_BUF[4+i] != SelfLongAddr[i]) return;//判断是不是属于自己的命令，不是就ヾ(￣▽￣)Bye~Bye~
+	}
+	InsertEsp32CommandStreamNodeByEnd(Esp32CommandStreamList,&USART2_RX_BUF[4],USART2_RX_BUF[6],USART2_RX_BUF[7],&USART2_RX_BUF[8],1);
+}
 void Analyse_APP_Data(){
 	u8 Ack[] = {'O','K'};//应答
+	u8 i;
 	//回复Esp32
 	Send_Custom_Data(USART2,0xFF,2,Ack);
-	if(USART2_RX_BUF[6] == 0xFF){//如果是ESP(或APP)的应答信号		
-		if(USART2_RX_BUF[8] == 'O' && USART2_RX_BUF[9] == 'K') Esp32AckFlag = 1;
-		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x01) APPJudgeFlag = 1;//同意入网
-		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x00) APPJudgeFlag = 2;//拒绝入网
-		else if(USART2_RX_BUF[8] == 0x00 && USART2_RX_BUF[9] == 0x02){
+	for(i = 0; i < 8; i++){
+		if(USART2_RX_BUF[4+i] != SelfLongAddr[i]) return;//判断是不是属于自己的命令，不是就ヾ(￣▽￣)Bye~Bye~
+	}
+	if(USART2_RX_BUF[14] == 0xFF){//如果是ESP(或APP)的应答信号		
+		if(USART2_RX_BUF[16] == 'O' && USART2_RX_BUF[17] == 'K') Esp32AckFlag = 1;
+		else if(USART2_RX_BUF[16] == 0x00 && USART2_RX_BUF[17] == 0x00){
+			APPJudgeFlag = 2;//拒绝入网
+		}
+		else if(USART2_RX_BUF[16] == 0x00 && USART2_RX_BUF[17] == 0x01){
+			APPJudgeFlag = 1;//同意入网
+		}
+		else if(USART2_RX_BUF[16] == 0x00 && USART2_RX_BUF[17] == 0x02){
 			Zigbee_Change_Mode(0);
 			OpenNet();
 			Zigbee_Change_Mode(1);
 			APPOpenNetCountDown = 120;//开放入网
 		}
+		else if(USART2_RX_BUF[16] == 0x00 && USART2_RX_BUF[17] == 0x03){
+			PrintDeviceListFlag = 1;
+		}
+		else if(USART2_RX_BUF[16] == 0x00 && USART2_RX_BUF[17] == 0x04){
+			//删除指定终端
+			DeleteDeviceNodeByLongAddr(DeviceList,&USART2_RX_BUF[18]);
+		}
 	}
 	else{//否则就是需要执行的命令
 		//存入待处理数据流链表
-		InsertEsp32CommandStreamNodeByEnd(Esp32CommandStreamList,&USART2_RX_BUF[4],USART2_RX_BUF[6],USART2_RX_BUF[7],&USART2_RX_BUF[8],1);
+		InsertEsp32CommandStreamNodeByEnd(Esp32CommandStreamList,&USART2_RX_BUF[12],USART2_RX_BUF[14],USART2_RX_BUF[15],&USART2_RX_BUF[16],1);
 	}
 }
 
@@ -379,8 +518,13 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 		USART_SendData(USART2, 0xA4);
 		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 
-		for(u8 i = 0; i < 2; i++){
+		for(i = 0; i < 2; i++){
 			USART_SendData(USART2, SelfShortAddr[i]);
+			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
+		}
+		
+		for(i = 0; i < 8; i++){
+			USART_SendData(USART2, SelfLongAddr[i]);
 			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 		}
 		

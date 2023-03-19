@@ -159,7 +159,7 @@ void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite)
 void AT24CXX_Save_List(u16 WriteAddr,struct myDevice* headNode){
 	u8 i;
 	Device* posNode = headNode->next;
-	AT24CXX_WriteOneByte(EE_TYPE-1,0x23);//24Cxx设备的在倒数第二位写66，表示已经保存过链表
+	AT24CXX_WriteOneByte(EE_TYPE-1,0x66);//24Cxx设备的在倒数第二位写66，表示已经保存过链表
 	while(posNode != NULL){
 		AT24CXX_WriteOneByte(WriteAddr++,posNode->type);
 		for(i = 0; i < 8; i++){
@@ -187,7 +187,7 @@ struct myDevice* AT24CXX_Load_List(u16 ReadAddr){
 	u8 LongAddr[8];
 	u8 ShortAddr[2];
 	Device* newList = CreateDeviceList();
-	if(AT24CXX_ReadOneByte(EE_TYPE-1) == 0x23){//如果曾写过链表,则读取，否则就只是创建了一个新的链表
+	if(AT24CXX_ReadOneByte(EE_TYPE-1) == 0x66){//如果曾写过链表,则读取，否则就只是创建了一个新的链表
 		while(AT24CXX_ReadOneByte(ReadAddr) != 0xFF){
 			type = AT24CXX_ReadOneByte(ReadAddr++);
 			for(i = 0; i < 8; i++){
@@ -213,7 +213,7 @@ void AT24CXX_Clear(void)
 {				   	  	    
 	u8 i;
 	for(i = 0; i < EE_TYPE; i++){
-		AT24CXX_WriteOneByte(0,0);
+		AT24CXX_WriteOneByte(i,0);
 	}
 }
 
