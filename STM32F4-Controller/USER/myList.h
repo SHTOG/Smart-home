@@ -16,11 +16,11 @@ void InsertEsp32CommandStreamNodeByEnd(Esp32CommandStream* headNode,u8* DSAddr, 
 void HandleEsp32CommandStream(Esp32CommandStream* headNode);
 
 Device* CreateDeviceList(void);
-Device* CreateDeviceNode(u8 type, u8 onlineFlag, u8* LongAddr,u8* ShortAddr) ;
-void InsertDeviceNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr,u8* ShortAddr);
+Device* CreateDeviceNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr, u8 PosNameLen, u8* PosName, u8 SerialNumber);
+void InsertDeviceNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr, u8 PosNameLen, u8* PosName, u8 SerialNumber);
 void DeleteDeviceNodeByLongAddr(Device* headNode, u8* LongAddr);
 u8 CheckDeviceNodeByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr);
 void UpdateDeviceList(Device* headNode);
 void PrintDeviceList(Device* headNode);
 void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr);
-#endif 
+#endif

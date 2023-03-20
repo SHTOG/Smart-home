@@ -4,41 +4,43 @@
 #include "stdlib.h"
 #include "string.h"
 
-#define MAX_DATA_FROM_ESP32_LEN 20   //Óëesp32Í¨ĞÅÊı¾İÖ¡µÄÓĞĞ§Êı¾İ
+#define MAX_DATA_FROM_ESP32_LEN 20   //ä¸esp32é€šä¿¡æ•°æ®å¸§çš„æœ‰æ•ˆæ•°æ®
 
-//Éè±¸ĞÅÏ¢Á´±í½áµã
+//è®¾å¤‡ä¿¡æ¯é“¾è¡¨ç»“ç‚¹
 typedef struct myDevice{
-    //Êı¾İÓò
-    u8 type;            //µçÆ÷ÀàĞÍ
-    u8 onlineFlag;      //ÈëÍø±êÖ¾£¬0-Î´ÈëÍø£¬1-ÒÑÈëÍø
-    u8 LongAddr[8];     //ZigbeeÉè±¸³¤µØÖ·
-    u8 ShortAddr[2];    //ZigbeeÉè±¸¶ÌµØÖ·
-    //Ö¸ÕëÓò
+    //æ•°æ®åŸŸ
+    u8 type;            //ç”µå™¨ç±»å‹
+    u8 onlineFlag;      //å…¥ç½‘æ ‡å¿—ï¼Œ0-æœªå…¥ç½‘ï¼Œ1-å·²å…¥ç½‘
+    u8 LongAddr[8];     //Zigbeeè®¾å¤‡é•¿åœ°å€
+    u8 ShortAddr[2];    //Zigbeeè®¾å¤‡çŸ­åœ°å€
+    u8 PosNameLen;      //ç©ºé—´ä½ç½®åçš„å¤§å°(å­—èŠ‚)
+    u8 PosName[18];     //ç»ˆç«¯è¢«ç”¨æˆ·å®‰æ’çš„ç©ºé—´ä½ç½®(æœ€å¤š6ä¸ªä¸­æ–‡æˆ–18ä¸ªè‹±æ–‡)
+    u8 SerialNumber;    //ç»ˆç«¯ç¼–å·ï¼Œç”¨ä»¥åŒºåˆ†åŒä¸€ç©ºé—´ä½ç½®çš„åŒç±»å‹å®¶å±…
+    //æŒ‡é’ˆåŸŸ
     struct myDevice* next;
 }Device;
 
-
-//ÓëEsp32¼äÍ¨ĞÅÊı¾İÁ÷Á´±í½áµã
+//ä¸Esp32é—´é€šä¿¡æ•°æ®æµé“¾è¡¨ç»“ç‚¹
 typedef struct CommandStreamWithEsp32{
-    //Êı¾İÓò
-    u8 DSAddr[2];//Ö¸ÁîÖÕ¶Ë¶ÌµØÖ·
-    u8 type;//Ö¸ÁîÖÕ¶ËÉè±¸ÀàĞÍÂë
-    u8 len;//ÓĞĞ§Êı¾İ³¤¶È
-    u8 Data[MAX_DATA_FROM_ESP32_LEN];//ÓĞĞ§Êı¾İ
-    u8 DataDirection;//Êı¾İ´«Êä·½Ïò,1->À´×ÔESP32   2->×¼±¸·¢ÍùEsp32
-    //Ö¸ÕëÓò
+    //æ•°æ®åŸŸ
+    u8 DSAddr[2];//æŒ‡ä»¤ç»ˆç«¯çŸ­åœ°å€
+    u8 type;//æŒ‡ä»¤ç»ˆç«¯è®¾å¤‡ç±»å‹ç 
+    u8 len;//æœ‰æ•ˆæ•°æ®é•¿åº¦
+    u8 Data[MAX_DATA_FROM_ESP32_LEN];//æœ‰æ•ˆæ•°æ®
+    u8 DataDirection;//æ•°æ®ä¼ è¾“æ–¹å‘,1->æ¥è‡ªESP32   2->å‡†å¤‡å‘å¾€Esp32
+    //æŒ‡é’ˆåŸŸ
     struct CommandStreamWithEsp32* next;
 }Esp32CommandStream;
 
 
-//À´×ÔÖÕ¶ËµÄÊı¾İÁ÷Á´±í½áµã
+//æ¥è‡ªç»ˆç«¯çš„æ•°æ®æµé“¾è¡¨ç»“ç‚¹
 typedef struct CommandStreamFromTerminal{
-    //Êı¾İÓò
-	u8 SLAddr[8];//Êı¾İÔ´³¤µØÖ·
-    u8 type;//Ö¸ÁîÖÕ¶ËÉè±¸ÀàĞÍÂë
-    u8 len;//ÓĞĞ§Êı¾İ³¤¶È
-    u8 Data[MAX_DATA_FROM_ESP32_LEN];//ÓĞĞ§Êı¾İ
-    //Ö¸ÕëÓò
+    //æ•°æ®åŸŸ
+	u8 SLAddr[8];//æ•°æ®æºé•¿åœ°å€
+    u8 type;//æŒ‡ä»¤ç»ˆç«¯è®¾å¤‡ç±»å‹ç 
+    u8 len;//æœ‰æ•ˆæ•°æ®é•¿åº¦
+    u8 Data[MAX_DATA_FROM_ESP32_LEN];//æœ‰æ•ˆæ•°æ®
+    //æŒ‡é’ˆåŸŸ
     struct CommandStreamFromTerminal* next;
 }TerminalStream;
 
@@ -46,12 +48,12 @@ extern u8 AckFlag;
 extern u8 AckJudge;
 extern Device* DeviceList;
 extern void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data);
-extern u8  USART1_RX_BUF[200]; //½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.Ä©×Ö½ÚÎª»»ĞĞ·û 
-extern u16 USART1_RX_STA;         		//½ÓÊÕ×´Ì¬±ê¼Ç	
-extern u8  USART2_RX_BUF[200]; //½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.Ä©×Ö½ÚÎª»»ĞĞ·û 
-extern u16 USART2_RX_STA;         		//½ÓÊÕ×´Ì¬±ê¼Ç	
-extern u8  USART3_RX_BUF[200]; //½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.Ä©×Ö½ÚÎª»»ĞĞ·û 
-extern u16 USART3_RX_STA;         		//½ÓÊÕ×´Ì¬±ê¼Ç	
+extern u8  USART1_RX_BUF[200]; //æ¥æ”¶ç¼“å†²,æœ€å¤§USART_REC_LENä¸ªå­—èŠ‚.æœ«å­—èŠ‚ä¸ºæ¢è¡Œç¬¦ 
+extern u16 USART1_RX_STA;         		//æ¥æ”¶çŠ¶æ€æ ‡è®°	
+extern u8  USART2_RX_BUF[200]; //æ¥æ”¶ç¼“å†²,æœ€å¤§USART_REC_LENä¸ªå­—èŠ‚.æœ«å­—èŠ‚ä¸ºæ¢è¡Œç¬¦ 
+extern u16 USART2_RX_STA;         		//æ¥æ”¶çŠ¶æ€æ ‡è®°	
+extern u8  USART3_RX_BUF[200]; //æ¥æ”¶ç¼“å†²,æœ€å¤§USART_REC_LENä¸ªå­—èŠ‚.æœ«å­—èŠ‚ä¸ºæ¢è¡Œç¬¦ 
+extern u16 USART3_RX_STA;         		//æ¥æ”¶çŠ¶æ€æ ‡è®°	
 extern Device* DeviceList;
 extern u8 SelfLongAddr[8];
 extern u8 BootedTimeFlag;
@@ -64,33 +66,33 @@ extern u8 SelfLongAddr[8];
 extern u8 SelfShortAddr[2];
 extern u8 NetFlag;
 extern u8 EnterModeFlag;
-extern u8 GetStateFlag;//¶ÁÈ¡Ä£¿é×´Ì¬±êÖ¾Î»£¬¶ÁÈ¡³É¹¦ÖÃ1
-extern u8 SetSendTargetFlag;//ÉèÖÃÍ¸´«Ä¿±ê±êÖ¾Î»£¬·ÖÁ½²½£¬ÏÈÉèÖÃÄ¿±ê¶ÌµØÖ·£¬ÔÙÉèÖÃÄ¿±ê¶Ë¿Ú£¬¶ÌµØÖ·ÉèÖÃ³É¹¦ºóÖÃ1£¬¶Ë¿ÚÉèÖÃ³É¹¦ºóÖÃ0
-extern u8 ReadySetTargetFlag;//³É¹¦ÉèÖÃÍ¸´«Ä¿±ê±êÖ¾Î»£¬1ÎªÒÑÉèÖÃ£¬0Îª´ıÉèÖÃ
-extern u16 MilliSecond;//ºÁÃë¼¶¼ÆÊıÆ÷
-extern u8 Second;//Ãë¼¶¼ÆÊıÆ÷
-extern u8 Minute;//·Ö¼¶¼ÆÊıÆ÷
-extern u8 WaitTime;//Ãë¼¶µÈ´ıÓ¦´ğÊ±¼ä,ÖÃÁãÊ±¿ªÊ¼¼ÆÊ±,¼Æµ½255Í£Ö¹
-extern u8 EspWaitTime;//Ãë¼¶µÈ´ıÓ¦´ğÊ±¼ä,ÖÃÁãÊ±¿ªÊ¼¼ÆÊ±,¼Æµ½5Í£Ö¹
-extern Esp32CommandStream* Esp32CommandStreamList;//ÓëEsp32¼äÍ¨ĞÅÊı¾İÁ÷Á´±í
-extern TerminalStream* TerminalStreamList;//ÖÕ¶ËĞÅÏ¢Á÷Á´±í
-extern u8 APPOpenNetCountDown;//APP¿ª·ÅÖÕ¶ËÈëÍøµ¹¼ÆÊ±£¨µ¥Î»Ãë£©£¬µ±APP´ò¿ªÈëÍøĞí¿ÉÊ±£¬µ¹¼ÆÊ±Ôö¼Óµ½120£¬ÕâÆÚ¼äÖÕ¶Ë·¢À´µÄÉè±¸ĞÅÏ¢ÃüÁî²Å»á±»·ÖÎöÖ´ĞĞ
-extern u8 APPJudgeFlag;//À´×ÔAPPµÄÈëÍøÅĞ¶Ï±êÖ¾Î»£¬Èç¹ûÎª1£¬±íÊ¾Í¬Òâ£¬Îª2±íÊ¾¾Ü¾ø£¬ÏĞÊ±ÖÃ0
+extern u8 GetStateFlag;//è¯»å–æ¨¡å—çŠ¶æ€æ ‡å¿—ä½ï¼Œè¯»å–æˆåŠŸç½®1
+extern u8 SetSendTargetFlag;//è®¾ç½®é€ä¼ ç›®æ ‡æ ‡å¿—ä½ï¼Œåˆ†ä¸¤æ­¥ï¼Œå…ˆè®¾ç½®ç›®æ ‡çŸ­åœ°å€ï¼Œå†è®¾ç½®ç›®æ ‡ç«¯å£ï¼ŒçŸ­åœ°å€è®¾ç½®æˆåŠŸåç½®1ï¼Œç«¯å£è®¾ç½®æˆåŠŸåç½®0
+extern u8 ReadySetTargetFlag;//æˆåŠŸè®¾ç½®é€ä¼ ç›®æ ‡æ ‡å¿—ä½ï¼Œ1ä¸ºå·²è®¾ç½®ï¼Œ0ä¸ºå¾…è®¾ç½®
+extern u16 MilliSecond;//æ¯«ç§’çº§è®¡æ•°å™¨
+extern u8 Second;//ç§’çº§è®¡æ•°å™¨
+extern u8 Minute;//åˆ†çº§è®¡æ•°å™¨
+extern u8 WaitTime;//ç§’çº§ç­‰å¾…åº”ç­”æ—¶é—´,ç½®é›¶æ—¶å¼€å§‹è®¡æ—¶,è®¡åˆ°255åœæ­¢
+extern u8 EspWaitTime;//ç§’çº§ç­‰å¾…åº”ç­”æ—¶é—´,ç½®é›¶æ—¶å¼€å§‹è®¡æ—¶,è®¡åˆ°5åœæ­¢
+extern Esp32CommandStream* Esp32CommandStreamList;//ä¸Esp32é—´é€šä¿¡æ•°æ®æµé“¾è¡¨
+extern TerminalStream* TerminalStreamList;//ç»ˆç«¯ä¿¡æ¯æµé“¾è¡¨
+extern u8 APPOpenNetCountDown;//APPå¼€æ”¾ç»ˆç«¯å…¥ç½‘å€’è®¡æ—¶ï¼ˆå•ä½ç§’ï¼‰ï¼Œå½“APPæ‰“å¼€å…¥ç½‘è®¸å¯æ—¶ï¼Œå€’è®¡æ—¶å¢åŠ åˆ°120ï¼Œè¿™æœŸé—´ç»ˆç«¯å‘æ¥çš„è®¾å¤‡ä¿¡æ¯å‘½ä»¤æ‰ä¼šè¢«åˆ†ææ‰§è¡Œ
+extern u8 APPJudgeFlag;//æ¥è‡ªAPPçš„å…¥ç½‘åˆ¤æ–­æ ‡å¿—ä½ï¼Œå¦‚æœä¸º1ï¼Œè¡¨ç¤ºåŒæ„ï¼Œä¸º2è¡¨ç¤ºæ‹’ç»ï¼Œé—²æ—¶ç½®0
 extern u8 PrintDeviceListFlag;
 extern u8 UpdateWaitTime;
 
-//0,²»Ö§³Öucos
-//1,Ö§³Öucos
-#define SYSTEM_SUPPORT_OS		0		//¶¨ÒåÏµÍ³ÎÄ¼ş¼ĞÊÇ·ñÖ§³ÖUCOS
+//0,ä¸æ”¯æŒucos
+//1,æ”¯æŒucos
+#define SYSTEM_SUPPORT_OS		0		//å®šä¹‰ç³»ç»Ÿæ–‡ä»¶å¤¹æ˜¯å¦æ”¯æŒUCOS
 																	    
 	 
-//Î»´ø²Ù×÷,ÊµÏÖ51ÀàËÆµÄGPIO¿ØÖÆ¹¦ÄÜ
-//¾ßÌåÊµÏÖË¼Ïë,²Î¿¼<<CM3È¨ÍşÖ¸ÄÏ>>µÚÎåÕÂ(87Ò³~92Ò³).M4Í¬M3ÀàËÆ,Ö»ÊÇ¼Ä´æÆ÷µØÖ·±äÁË.
-//IO¿Ú²Ù×÷ºê¶¨Òå
+//ä½å¸¦æ“ä½œ,å®ç°51ç±»ä¼¼çš„GPIOæ§åˆ¶åŠŸèƒ½
+//å…·ä½“å®ç°æ€æƒ³,å‚è€ƒ<<CM3æƒå¨æŒ‡å—>>ç¬¬äº”ç« (87é¡µ~92é¡µ).M4åŒM3ç±»ä¼¼,åªæ˜¯å¯„å­˜å™¨åœ°å€å˜äº†.
+//IOå£æ“ä½œå®å®šä¹‰
 #define BITBAND(addr, bitnum) ((addr & 0xF0000000)+0x2000000+((addr &0xFFFFF)<<5)+(bitnum<<2)) 
 #define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) 
 #define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) 
-//IO¿ÚµØÖ·Ó³Éä
+//IOå£åœ°å€æ˜ å°„
 #define GPIOA_ODR_Addr    (GPIOA_BASE+20) //0x40020014
 #define GPIOB_ODR_Addr    (GPIOB_BASE+20) //0x40020414 
 #define GPIOC_ODR_Addr    (GPIOC_BASE+20) //0x40020814 
@@ -111,40 +113,40 @@ extern u8 UpdateWaitTime;
 #define GPIOH_IDR_Addr    (GPIOH_BASE+16) //0x40021C10 
 #define GPIOI_IDR_Addr    (GPIOI_BASE+16) //0x40022010 
  
-//IO¿Ú²Ù×÷,Ö»¶Ôµ¥Ò»µÄIO¿Ú!
-//È·±£nµÄÖµĞ¡ÓÚ16!
-#define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //Êä³ö 
-#define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //ÊäÈë 
+//IOå£æ“ä½œ,åªå¯¹å•ä¸€çš„IOå£!
+//ç¡®ä¿nçš„å€¼å°äº16!
+#define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //è¾“å‡º 
+#define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //è¾“å…¥ 
 
-#define PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  //Êä³ö 
-#define PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  //ÊäÈë 
+#define PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  //è¾“å‡º 
+#define PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  //è¾“å…¥ 
 
-#define PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  //Êä³ö 
-#define PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  //ÊäÈë 
+#define PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  //è¾“å‡º 
+#define PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  //è¾“å…¥ 
 
-#define PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  //Êä³ö 
-#define PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  //ÊäÈë 
+#define PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  //è¾“å‡º 
+#define PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  //è¾“å…¥ 
 
-#define PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  //Êä³ö 
-#define PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  //ÊäÈë
+#define PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  //è¾“å‡º 
+#define PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  //è¾“å…¥
 
-#define PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  //Êä³ö 
-#define PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  //ÊäÈë
+#define PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  //è¾“å‡º 
+#define PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  //è¾“å…¥
 
-#define PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  //Êä³ö 
-#define PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  //ÊäÈë
+#define PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  //è¾“å‡º 
+#define PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  //è¾“å…¥
 
-#define PHout(n)   BIT_ADDR(GPIOH_ODR_Addr,n)  //Êä³ö 
-#define PHin(n)    BIT_ADDR(GPIOH_IDR_Addr,n)  //ÊäÈë
+#define PHout(n)   BIT_ADDR(GPIOH_ODR_Addr,n)  //è¾“å‡º 
+#define PHin(n)    BIT_ADDR(GPIOH_IDR_Addr,n)  //è¾“å…¥
 
-#define PIout(n)   BIT_ADDR(GPIOI_ODR_Addr,n)  //Êä³ö 
-#define PIin(n)    BIT_ADDR(GPIOI_IDR_Addr,n)  //ÊäÈë
+#define PIout(n)   BIT_ADDR(GPIOI_ODR_Addr,n)  //è¾“å‡º 
+#define PIin(n)    BIT_ADDR(GPIOI_IDR_Addr,n)  //è¾“å…¥
 
-//ÒÔÏÂÎª»ã±àº¯Êı
-void WFI_SET(void);		//Ö´ĞĞWFIÖ¸Áî
-void INTX_DISABLE(void);//¹Ø±ÕËùÓĞÖĞ¶Ï
-void INTX_ENABLE(void);	//¿ªÆôËùÓĞÖĞ¶Ï
-void MSR_MSP(u32 addr);	//ÉèÖÃ¶ÑÕ»µØÖ· 
+//ä»¥ä¸‹ä¸ºæ±‡ç¼–å‡½æ•°
+void WFI_SET(void);		//æ‰§è¡ŒWFIæŒ‡ä»¤
+void INTX_DISABLE(void);//å…³é—­æ‰€æœ‰ä¸­æ–­
+void INTX_ENABLE(void);	//å¼€å¯æ‰€æœ‰ä¸­æ–­
+void MSR_MSP(u32 addr);	//è®¾ç½®å †æ ˆåœ°å€ 
 #endif
 
 

@@ -113,7 +113,7 @@ void HandleTerminalStream(TerminalStream* headNode){
 					Zigbee_Change_Mode(1);
 					Send_Custom_Data(USART1,0xFF,2,AllowAck);//同意
 					//纳入链表
-					InsertDeviceNodeByType(DeviceList,posNode->type,1,posNode->SLAddr,&posNode->Data[1]);
+					InsertDeviceNodeByType(DeviceList,posNode->type,1,posNode->SLAddr,&posNode->Data[1],0,NULL,0);
 				}
 				else if(APPJudgeFlag == 2){//表示APP已拒绝
 					//设置透传目标为对应设备
@@ -215,17 +215,20 @@ void HandleEsp32CommandStream(Esp32CommandStream* headNode){
 
 /*********************************以下为对设备信息链表操作函数*********************************/
 //创建结点
-Device* CreateDeviceNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
+Device* CreateDeviceNode(u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr, u8 PosNameLen, u8* PosName, u8 SerialNumber) {
 	Device* newNode = (Device*)malloc(sizeof(Device));
 	newNode->type = type;
 	newNode->onlineFlag = onlineFlag;
-	ArrCpy(8,newNode->LongAddr, LongAddr);//注意！！要用strcpy
-	ArrCpy(2,newNode->ShortAddr, ShortAddr);//注意！！要用strcpy
+	ArrCpy(8,newNode->LongAddr, LongAddr);
+	ArrCpy(2,newNode->ShortAddr, ShortAddr);
+	if(PosNameLen != 0) ArrCpy(18,newNode->PosName,PosName);
+	newNode->PosNameLen = PosNameLen;
+	newNode->SerialNumber = SerialNumber;
 	newNode->next = NULL;
 	return newNode;
 }
 
-Device* CreateDeviceList(void) {
+Device* CreateDeviceList(void){
 	//创建表头
 	Device* headNode = (Device*)malloc(sizeof(Device));//指针变成了结构体变量
 	headNode->type = 0;
@@ -233,14 +236,14 @@ Device* CreateDeviceList(void) {
 	return headNode;
 }
 
-void InsertDeviceNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr) {
+void InsertDeviceNodeByType(Device* headNode, u8 type, u8 onlineFlag, u8* LongAddr, u8* ShortAddr, u8 PosNameLen, u8* PosName, u8 SerialNumber){
 	Device* posNode = headNode;
 	Device* posNodeFront;
 	while (posNode->type <= type && posNode->next != NULL) {
 		posNodeFront = posNode;
 		posNode = posNode->next;
 	}//定位在type为指定数字或的最后一个
-	Device* newNode = CreateDeviceNode(type,onlineFlag, LongAddr, ShortAddr);
+	Device* newNode = CreateDeviceNode(type,onlineFlag, LongAddr, ShortAddr,PosNameLen,PosName,SerialNumber);
 	if(posNode->type > type){//如果不是最后一个
 		posNodeFront->next = newNode;
 		newNode->next = posNode;

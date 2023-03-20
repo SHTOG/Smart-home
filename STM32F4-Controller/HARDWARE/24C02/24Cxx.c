@@ -100,21 +100,22 @@ void AT24CXX_WriteLenByte(u16 WriteAddr,u32 DataToWrite,u8 Len)
 /**
    *@brief	检查AT24CXX是否正常,这里用了24Cxx的最后一个地址(EE_TYPE)来存储标志字,更换24Cxx芯片时在头文件中修改EE_TYPE的宏定义即可
    *@param	void
-   *@retval	返回1:检测失败
-   *@retval	返回0:检测成功
+   *@retval	返回0:检测失败
+   *@retval	返回1:检测成功
    */
 
 u8 AT24CXX_Check(void)
 {
 	u8 temp;
-	temp=AT24CXX_ReadOneByte(EE_TYPE);//避免每次开机都写AT24CXX			   
-	if(temp==0X55)return 0;		   
-	else//排除第一次初始化的情况
-	{
+	temp=AT24CXX_ReadOneByte(EE_TYPE);//避免每次开机都写AT24CXX
+	if(temp==0X55)return 1;
+	else
+	{	
+		AT24CXX_WriteOneByte(EE_TYPE,0X55);
 		temp=AT24CXX_ReadOneByte(EE_TYPE);
-		if(temp==0X55)return 0;
+		if(temp==0X55)return 1;
 	}
-	return 1;											  
+	return 0;
 }
 
 /**
@@ -168,10 +169,14 @@ void AT24CXX_Save_List(u16 WriteAddr,struct myDevice* headNode){
 		for(i = 0; i < 2; i++){
 			AT24CXX_WriteOneByte(WriteAddr++,posNode->ShortAddr[i]);
 		}
+		AT24CXX_WriteOneByte(WriteAddr++,posNode->PosNameLen);
+		for(i = 0; i < posNode->PosNameLen; i++){
+			AT24CXX_WriteOneByte(WriteAddr++,posNode->PosName[i]);
+		}
+		AT24CXX_WriteOneByte(WriteAddr++,posNode->SerialNumber);
 		posNode = posNode->next;
 	}
 	AT24CXX_WriteOneByte(WriteAddr, 0xFF);//在链表的最末端写一个0xFF封尾
-
 }
 
 
@@ -183,20 +188,24 @@ void AT24CXX_Save_List(u16 WriteAddr,struct myDevice* headNode){
    */
 
 struct myDevice* AT24CXX_Load_List(u16 ReadAddr){
-	u8 type,i;
-	u8 LongAddr[8];
-	u8 ShortAddr[2];
+	u8 i;
+	Device newDevice;
 	Device* newList = CreateDeviceList();
 	if(AT24CXX_ReadOneByte(EE_TYPE-1) == 0x66){//如果曾写过链表,则读取，否则就只是创建了一个新的链表
 		while(AT24CXX_ReadOneByte(ReadAddr) != 0xFF){
-			type = AT24CXX_ReadOneByte(ReadAddr++);
+			newDevice.type = AT24CXX_ReadOneByte(ReadAddr++);
 			for(i = 0; i < 8; i++){
-				LongAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
+				newDevice.LongAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
 			}
 			for(i = 0; i < 2; i++){
-				ShortAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
+				newDevice.ShortAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
 			}
-			InsertDeviceNodeByType(newList, type,0, LongAddr, ShortAddr);
+			newDevice.PosNameLen = AT24CXX_ReadOneByte(ReadAddr++);
+			for(i = 0; i < newDevice.PosNameLen; i++){
+				newDevice.PosName[i] = AT24CXX_ReadOneByte(ReadAddr++);
+			}
+			newDevice.SerialNumber = AT24CXX_ReadOneByte(ReadAddr++);
+			InsertDeviceNodeByType(newList, newDevice.type,0, newDevice.LongAddr, newDevice.ShortAddr,newDevice.PosNameLen,newDevice.PosName,newDevice.SerialNumber);
 		}
 	}
 	return newList;
