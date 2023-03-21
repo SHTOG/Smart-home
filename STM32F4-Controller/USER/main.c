@@ -17,7 +17,7 @@ u8 ReadFlag = 0;//状态读取成功标志位
 Device* DeviceList = NULL;//设备长短地址数据链表
 Esp32CommandStream* Esp32CommandStreamList = NULL;//与Esp32间通信数据流链表
 TerminalStream* TerminalStreamList = NULL;//终端信息流链表
-Scenes* SceneList = NULL;//存储不同场景的表头的链表
+Scenes* SceneList = NULL;//全场景链表
 u8 Esp32AckFlag = 0;
 u8 PrintDeviceListFlag = 0;
 /*End of 全局变量*/

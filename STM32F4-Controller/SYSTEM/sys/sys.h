@@ -4,7 +4,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-#define MAX_DATA_FROM_ESP32_LEN 20  //与esp32通信数据帧的有效数据最大长度
+#define MAX_DATA_FROM_ESP32_LEN 26  //与esp32通信数据帧的有效数据最大长度
 #define MAX_DATA_TO_Terminal_LEN 20  //对终端的控制命令的数据帧的有效数据最大长度
 #define MAX_DATA_IN_SCENE_LEN 18        //场景链表中Data最大长度,目前需求最大的应该是场景名，18个字节
 
@@ -94,6 +94,7 @@ extern u8 WaitTime;//秒级等待应答时间,置零时开始计时,计到255停
 extern u8 EspWaitTime;//秒级等待应答时间,置零时开始计时,计到5停止
 extern Esp32CommandStream* Esp32CommandStreamList;//与Esp32间通信数据流链表
 extern TerminalStream* TerminalStreamList;//终端信息流链表
+extern Scenes* SceneList;//全场景链表
 extern u8 APPOpenNetCountDown;//APP开放终端入网倒计时（单位秒），当APP打开入网许可时，倒计时增加到120，这期间终端发来的设备信息命令才会被分析执行
 extern u8 APPJudgeFlag;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
 extern u8 PrintDeviceListFlag;

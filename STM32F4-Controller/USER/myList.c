@@ -50,8 +50,8 @@ Scenes* CreateSceneList(){
 }
 
 //插入新场景
-void InsertSceneNodeByEnd(Scenes* headNode, u8 SceneNameLen, u8* SceneName){
-	Scenes* posNode = headNode;
+void InsertSceneNodeByEnd(Scenes* SceneList, u8 SceneNameLen, u8* SceneName){
+	Scenes* posNode = SceneList;
 	Scene* newScene;
 	Scenes* newNode;
 	while (posNode->next != NULL) {
@@ -67,7 +67,7 @@ void InsertSceneNodeByEnd(Scenes* headNode, u8 SceneNameLen, u8* SceneName){
 
 /**
   * @brief		根据Flag指定单场景插入成员(条件or命令)(供程序员调用)
-  * @param		AllSceneList：	场景链表
+  * @param		SceneList：	场景链表
   * @param		SceneNameLen：	场景名字节长度
   * @param		SceneName	：	场景名
   * @param		Flag		：	条件or命令区分标志位
@@ -75,12 +75,12 @@ void InsertSceneNodeByEnd(Scenes* headNode, u8 SceneNameLen, u8* SceneName){
   * @param		Data		：	指定Data
   * @retval	    void
   */
-void InsertSceneMemberNodeByFlag_User(Scenes* AllSceneList, u8 SceneNameLen, u8* SceneName, u8 Flag, u8 DataLen, u8* Data){
+void InsertSceneMemberNodeByFlag_User(Scenes* SceneList, u8 SceneNameLen, u8* SceneName, u8 Flag, u8 DataLen, u8* Data){
 	Scenes* posNode;
-	if(AllSceneList->next == NULL){
+	if(SceneList->next == NULL){
 		return;//场景链表是空的,直接退出了
 	}
-	posNode = AllSceneList->next;
+	posNode = SceneList->next;
 	while (ArrCmp(SceneNameLen,posNode->SceneHeadNode->Data, SceneName) != 1) {
 		if(posNode->next == NULL){
 			return;//没有找到指定Data结点
@@ -88,25 +88,51 @@ void InsertSceneMemberNodeByFlag_User(Scenes* AllSceneList, u8 SceneNameLen, u8*
 		posNode = posNode->next;
 	}
 	//找到了对应场景名的场景
-	InsertSceneMemberNodeByFlag_EXE(posNode->SceneHeadNode,Flag,DataLen,Data);//向该场景插入成员
+	InsertSceneMemberNodeByFlag_Exe(posNode->SceneHeadNode,Flag,DataLen,Data);//向该场景插入成员
 }
 
 /**
-  * @brief		删除对应场景名的场景
-  * @param		headNode：链表表头
+  * @brief		根据Data指定单场景删除成员(条件or命令)(供程序员调用)
+  * @param		SceneList：	场景链表
+  * @param		SceneNameLen：	场景名字节长度
+  * @param		SceneName	：	场景名
+  * @param		DataLen		：	指定Data长度
+  * @param		Data		：	指定Data
+  * @retval	    void
+  */
+void DeleteSceneMemberNodeByData_User(Scenes* SceneList, u8 SceneNameLen, u8* SceneName, u8 DataLen, u8* Data) {
+	Scenes* posNode;
+	if(SceneList->next == NULL){
+		return;//设备信息链表是空的,直接退出了
+	}
+	//如果链表内有设备
+	posNode = SceneList->next;
+	while (ArrCmp(SceneNameLen,posNode->SceneHeadNode->Data, SceneName) != 1) {
+		if(posNode->next == NULL){
+			return;//没有找到指定Data结点
+		}
+		posNode = posNode->next;
+	}
+	//找到了指定场景
+	DeleteSceneMemberNodeByData_Exe(posNode->SceneHeadNode,DataLen,Data);
+}
+
+/**
+  * @brief		指定单场景
+  * @param		SceneList	：场景链表
   * @param		SceneNameLen：场景名长度
   * @param		SceneName   ：场景名
   * @retval	    void
   */
-void DeleteSceneNodeBySceneName(Scenes* headNode, u8 SceneNameLen, u8* SceneName) {
+void DeleteSceneNodeBySceneName(Scenes* SceneList, u8 SceneNameLen, u8* SceneName) {
 	Scenes* posNode;
 	Scenes* posNodeFront;
-	if(headNode->next == NULL){
+	if(SceneList->next == NULL){
 		return;//场景链表是空的,直接退出了
 	}
 	//如果链表内有设备
-	posNodeFront = headNode;
-	posNode = headNode->next;
+	posNodeFront = SceneList;
+	posNode = SceneList->next;
 	while (ArrCmp(SceneNameLen,posNode->SceneHeadNode->Data, SceneName) != 1) {
 		if(posNode->next == NULL){
 			return;//没有找到指定Data结点
@@ -121,6 +147,56 @@ void DeleteSceneNodeBySceneName(Scenes* headNode, u8 SceneNameLen, u8* SceneName
 	posNodeFront->next = posNode->next;
 	free(posNode->SceneHeadNode);
 	free(posNode);
+}
+
+/**
+  * @brief		启用单场景
+  * @param		SceneList	：场景链表
+  * @param		SceneNameLen：场景名长度
+  * @param		SceneName   ：场景名
+  * @retval	    void
+  */
+void StartScene(Scenes* SceneList, u8 SceneNameLen, u8* SceneName){
+	Scenes* posNode;
+	if(SceneList->next == NULL){
+		//如果场景链表是空的，直接退出
+		return;
+	}
+	posNode = SceneList->next;
+	while(ArrCmp(SceneNameLen,posNode->SceneHeadNode->Data,SceneName) != 1){
+		posNode = posNode->next;
+		if(posNode == NULL){
+			//如果场景链表内没有指定场景,直接退出
+			return;
+		}
+	}
+	//找到了指定名称的场景
+	posNode->SceneHeadNode->Flag = 1;//启用场景
+}
+
+/**
+  * @brief		禁用单场景
+  * @param		SceneList	：场景链表
+  * @param		SceneNameLen：场景名长度
+  * @param		SceneName   ：场景名
+  * @retval	    void
+  */
+void StopScene(Scenes* SceneList, u8 SceneNameLen, u8* SceneName){
+	Scenes* posNode;
+	if(SceneList->next == NULL){
+		//如果场景链表是空的，直接退出
+		return;
+	}
+	posNode = SceneList->next;
+	while(ArrCmp(SceneNameLen,posNode->SceneHeadNode->Data,SceneName) != 1){
+		posNode = posNode->next;
+		if(posNode == NULL){
+			//如果场景链表内没有指定场景,直接退出
+			return;
+		}
+	}
+	//找到了指定名称的场景
+	posNode->SceneHeadNode->Flag = 0;//禁用场景
 }
 /***********************************************END******************************************/
 
@@ -153,8 +229,8 @@ Scene* CreateSceneMemberList(u8 DataLen,u8* Data){
   * @param		Data：	  	指定Data
   * @retval	    void
   */
-void InsertSceneMemberNodeByFlag_EXE(Scene* headNode, u8 Flag, u8 DataLen, u8* Data){
-	Scene* posNode;
+void InsertSceneMemberNodeByFlag_Exe(Scene* headNode, u8 Flag, u8 DataLen, u8* Data){
+	Scene* posNode = headNode;
 	Scene* posNodeFront;
 	Scene* newNode;
 	if(headNode->next == NULL){
@@ -163,15 +239,16 @@ void InsertSceneMemberNodeByFlag_EXE(Scene* headNode, u8 Flag, u8 DataLen, u8* D
 		return;
 	}
 	//如果这不是场景链表的第一个设备,执行以下指令
-	posNode = headNode->next;
-	posNodeFront = headNode;
-	while (posNode->Flag <= Flag && posNode->next != NULL) {
+	
+	do{
+		posNodeFront = posNode;
+		posNode = posNode->next;
 		if(ArrCmp(DataLen,posNode->Data,Data) == 1){//如果已经有同一个条件或指令，那么不增加了直接退出
 			return;
 		}
-		posNodeFront = posNode;
-		posNode = posNode->next;
-	}//定位在Flag为指定值的最后一个或链表最后一个
+	}
+	while (posNode->Flag <= Flag && posNode->next != NULL);
+	//定位在Flag为指定值的最后一个或链表最后一个
 	newNode = CreateSceneMemberNode(Flag,DataLen,Data);//创建新结点
 	//如果不是最后一个
 	if(posNode->Flag > Flag){
@@ -185,13 +262,13 @@ void InsertSceneMemberNodeByFlag_EXE(Scene* headNode, u8 Flag, u8 DataLen, u8* D
 }
 
 /**
-  * @brief		删除场景链表中包含指定Data的结点
+  * @brief		根据Data指定单场景删除成员(条件or命令)(供程序自调用)
   * @param		headNode：链表表头
-  * @param		DataLen：	  指定Data长度
-  * @param		Data：	  指定Data
+  * @param		DataLen	：指定Data长度
+  * @param		Data	：指定Data
   * @retval	    void
   */
-void DeleteSceneMemberNodeByData(Scene* headNode, u8 DataLen, u8* Data) {
+void DeleteSceneMemberNodeByData_Exe(Scene* headNode, u8 DataLen, u8* Data) {
 	Scene* posNode;
 	Scene* posNodeFront;
 	if(headNode->next == NULL){
@@ -387,29 +464,29 @@ void HandleEsp32CommandStream(Esp32CommandStream* headNode){
 					}
 				}
 				else if(posNode->type == 0xFE){//如果是场景操作命令
-					if(posNode->Data[0] == 0x00){
-						
+					if(posNode->Data[0] == 0x00){//删除指定场景
+						DeleteSceneNodeBySceneName(SceneList,posNode->Data[1],&posNode->Data[2]);
 					}
-					else if(posNode->Data[0] == 0x01){
-
+					else if(posNode->Data[0] == 0x01){//创建指定场景
+						InsertSceneNodeByEnd(SceneList,posNode->Data[1],&posNode->Data[2]);
 					}
-					else if(posNode->Data[0] == 0x02){
-
+					else if(posNode->Data[0] == 0x02){//场景删除条件
+						DeleteSceneMemberNodeByData_User(SceneList,posNode->Data[1],&posNode->Data[2],posNode->Data[posNode->Data[1]+2],&posNode->Data[posNode->Data[1]+3]);
 					}
-					else if(posNode->Data[0] == 0x03){
-
+					else if(posNode->Data[0] == 0x03){//场景增加条件
+						InsertSceneMemberNodeByFlag_User(SceneList,posNode->Data[1],&posNode->Data[2],0,posNode->Data[posNode->Data[1]+2],&posNode->Data[posNode->Data[1]+3]);
 					}
-					else if(posNode->Data[0] == 0x04){
-
+					else if(posNode->Data[0] == 0x04){//场景删除指令
+						DeleteSceneMemberNodeByData_User(SceneList,posNode->Data[1],&posNode->Data[2],posNode->Data[posNode->Data[1]+2],&posNode->Data[posNode->Data[1]+3]);
 					}
-					else if(posNode->Data[0] == 0x05){
-
+					else if(posNode->Data[0] == 0x05){//场景增加指令
+						InsertSceneMemberNodeByFlag_User(SceneList,posNode->Data[1],&posNode->Data[2],1,posNode->Data[posNode->Data[1]+2],&posNode->Data[posNode->Data[1]+3]);
 					}
-					else if(posNode->Data[0] == 0x06){
-
+					else if(posNode->Data[0] == 0x06){//场景禁用指令
+						StopScene(SceneList,posNode->Data[1],&posNode->Data[2]);
 					}
-					else if(posNode->Data[0] == 0x07){
-
+					else if(posNode->Data[0] == 0x07){//场景启用指令
+						StartScene(SceneList,posNode->Data[1],&posNode->Data[2]);
 					}
 				}
 			}

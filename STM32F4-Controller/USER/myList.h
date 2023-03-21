@@ -6,14 +6,17 @@
 #include "24Cxx.h"
 Scenes* CreateSceneNode(Scene* newScene);
 Scenes* CreateSceneList(void);
-void InsertSceneNodeByEnd(Scenes* headNode, u8 SceneNameLen, u8* SceneName);
-void InsertSceneMemberNodeByFlag_User(Scenes* AllSceneList, u8 SceneNameLen, u8* SceneName, u8 Flag, u8 DataLen, u8* Data);
-void DeleteSceneNodeBySceneName(Scenes* headNode, u8 SceneNameLen, u8* SceneName);
+void InsertSceneNodeByEnd(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
+void InsertSceneMemberNodeByFlag_User(Scenes* SceneList, u8 SceneNameLen, u8* SceneName, u8 Flag, u8 DataLen, u8* Data);
+void DeleteSceneMemberNodeByData_User(Scenes* SceneList, u8 SceneNameLen, u8* SceneName, u8 DataLen, u8* Data);
+void DeleteSceneNodeBySceneName(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
+void StartScene(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
+void StopScene(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
 
 Scene* CreateSceneMemberNode(u8 Flag, u8 DataLen, u8* Data);
 Scene* CreateSceneMemberList(u8 DataLen,u8* Data);
-void InsertSceneMemberNodeByFlag_EXE(Scene* headNode, u8 Flag, u8 DataLen, u8* Data);
-void DeleteSceneMemberNodeByData(Scene* headNode, u8 DataLen, u8* Data) ;
+void InsertSceneMemberNodeByFlag_Exe(Scene* headNode, u8 Flag, u8 DataLen, u8* Data);
+void DeleteSceneMemberNodeByData_Exe(Scene* headNode, u8 DataLen, u8* Data) ;
 void DeleteSceneMemberNodeByEnd(Scene* headNode);
 
 
