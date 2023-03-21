@@ -5,7 +5,7 @@
 #include "Zigbee.h"
 #include "24Cxx.h"
 
-TerminalStream* CreateTermStreamNode(u8 type, u8 len, u8* Data); 
+TerminalStream* CreateTerminalStreamNode(u8* SLAddr, u8 type, u8 len, u8* Data);
 TerminalStream* CreateTerminalStreamList(void);
 void InsTerminalStreamNodeByEnd(TerminalStream* headNode,u8* SLAddr,u8 type, u8 len, u8* Data);
 void HandleTerminalStream(TerminalStream* headNode);
@@ -23,4 +23,5 @@ u8 CheckDeviceNodeByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr);
 void UpdateDeviceList(Device* headNode);
 void PrintDeviceList(Device* headNode);
 void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr);
+ void SetDevicePositionByLAddr(Device* HeadNode, u8* LongAddr, u8 PosNameLen, u8* PosName, u8 SerialNumber);
 #endif

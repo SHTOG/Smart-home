@@ -518,16 +518,17 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 		USART_SendData(USART2, 0xA4);
 		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 
-		for(i = 0; i < 2; i++){
-			USART_SendData(USART2, SelfShortAddr[i]);
-			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
-		}
 		
 		for(i = 0; i < 8; i++){
 			USART_SendData(USART2, SelfLongAddr[i]);
 			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 		}
-		
+
+		for(i = 0; i < 2; i++){
+			USART_SendData(USART2, SelfShortAddr[i]);
+			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
+		}
+
 		USART_SendData(USART2, type);
 		while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//等待发送结束
 

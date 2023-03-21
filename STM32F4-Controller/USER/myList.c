@@ -113,7 +113,7 @@ void HandleTerminalStream(TerminalStream* headNode){
 					Zigbee_Change_Mode(1);
 					Send_Custom_Data(USART1,0xFF,2,AllowAck);//同意
 					//纳入链表
-					InsertDeviceNodeByType(DeviceList,posNode->type,1,posNode->SLAddr,&posNode->Data[1],0,NULL,0);
+					InsertDeviceNodeByType(DeviceList,Data[0],1,posNode->SLAddr,&posNode->Data[1],0,NULL,0);
 				}
 				else if(APPJudgeFlag == 2){//表示APP已拒绝
 					//设置透传目标为对应设备
@@ -181,24 +181,33 @@ void HandleEsp32CommandStream(Esp32CommandStream* headNode){
 	}
 	while(posNode != NULL){//如果当前命令有内容，就执行
 		//处理数据
-		if(posNode->DataDirection == 1){//是来自ESP32的命令
-			/*设置命令发送方向*/
-			Zigbee_Change_Mode(0);
-			Set_Send_Target(posNode->DSAddr,0x01);//设置目标终端
-			Zigbee_Change_Mode(1);
-			/*设置完毕等待发送*/
-			AckFlag = 0;//清零应答标志位
-			WaitTime = 0;//倒计时重新开始计时
-			while(AckFlag != 1){
-				if(WaitTime >= 3){//3秒没有收到终端应答
-					SetDeviceOnlineFlagBySAddr(DeviceList,posNode->DSAddr);
-					break;
+		if(posNode->DataDirection == 1){//如果是来自ESP32的命令
+			if(posNode->DSAddr[0] == 0x00 && posNode->DSAddr[1] == 0x00){//如果是APP对中控的命令
+				if(posNode->type == 0x00){//如果是设备信息命令
+					if(posNode->Data[0] == 0x00 && posNode->Data[9] != 0){//如果是给指定终端定位的命令
+						SetDevicePositionByLAddr(DeviceList,&posNode->Data[1],posNode->Data[9],&posNode->Data[10],posNode->Data[posNode->len - 1]);
+					}
 				}
-				Send_Custom_Data(USART1,posNode->type,posNode->len,posNode->Data);//发送指令
-				AckJudge = 1;//允许delay到一半退出delay
-				delay_ms(100);//等待终端的应答,目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
 			}
-			AckJudge = 0;//禁止delay到一半退出delay
+			else{//如果是APP对终端的命令
+				/*设置命令发送方向*/
+				Zigbee_Change_Mode(0);
+				Set_Send_Target(posNode->DSAddr,0x01);//设置目标终端
+				Zigbee_Change_Mode(1);
+				/*设置完毕等待发送*/
+				AckFlag = 0;//清零应答标志位
+				WaitTime = 0;//倒计时重新开始计时
+				while(AckFlag != 1){
+					if(WaitTime >= 3){//3秒没有收到终端应答
+						SetDeviceOnlineFlagBySAddr(DeviceList,posNode->DSAddr);
+						break;
+					}
+					Send_Custom_Data(USART1,posNode->type,posNode->len,posNode->Data);//发送指令
+					AckJudge = 1;//允许delay到一半退出delay
+					delay_ms(100);//等待终端的应答,目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
+				}
+				AckJudge = 0;//禁止delay到一半退出delay
+			}
 		}
 		else if(posNode->DataDirection == 2){//准备发往ESP32的数据
 			Send_Custom_Data(USART2,posNode->type,posNode->len,posNode->Data);
@@ -394,11 +403,12 @@ void PrintDeviceList(Device* headNode) {
   * @retval	    void
   */
 void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr){
-	Device* posNode = headNode;
+	Device* posNode;
 	u8 Data[12];
 	u8 i;
-	if(posNode->next == NULL) return;
-	while(posNode->next != NULL){
+	if(headNode->next == NULL) return;//如果链表为空就直接拜拜
+	else posNode = headNode->next;
+	while(1){
 		if(ArrCmp(2,posNode->ShortAddr, ShortAddr) == 1){
 			posNode->onlineFlag = 0;
 			break ;
@@ -428,4 +438,30 @@ void SetDeviceOnlineFlagBySAddr(Device* headNode, u8* ShortAddr){
 	Data[i] = posNode->ShortAddr[1];
 	Send_Custom_Data(USART2,0x00,12,Data);//发给Esp
 }
+
+/**
+  * @brief		根据长地址设置指定生态内设备的所处空间及编号
+  * @param		HeadNode：链表表头
+  * @param		LongAddr：指定终端长地址 
+  * @param		PosNameLen：空间名长度
+  * @param		PosName：空间名指针
+  * @param		SerialNumber：编号
+  * @retval	    void
+  */
+
+ void SetDevicePositionByLAddr(Device* HeadNode, u8* LongAddr, u8 PosNameLen, u8* PosName, u8 SerialNumber){
+	Device* posNode;
+	if(HeadNode->next == NULL) return;//如果链表为空就直接拜拜
+	else posNode = HeadNode->next;
+	while(1){
+		if(ArrCmp(8,posNode->LongAddr, LongAddr) == 1){
+			break ;//找到了指定长地址的终端
+		}
+		else posNode = posNode->next;
+		if(posNode == NULL) return;//链表内没有符合条件的结点也拜拜
+	}
+	posNode->PosNameLen = PosNameLen;
+	ArrCpy(PosNameLen,posNode->PosName,PosName);
+	posNode->SerialNumber = SerialNumber;
+ }
 /***************************************END***************************************/
