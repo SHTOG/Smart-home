@@ -4,7 +4,9 @@
 #include "stdlib.h"
 #include "string.h"
 
-#define MAX_DATA_FROM_ESP32_LEN 20   //与esp32通信数据帧的有效数据
+#define MAX_DATA_FROM_ESP32_LEN 20  //与esp32通信数据帧的有效数据最大长度
+#define MAX_DATA_TO_Terminal_LEN 20  //对终端的控制命令的数据帧的有效数据最大长度
+#define MAX_DATA_IN_SCENE_LEN 18        //场景链表中Data最大长度,目前需求最大的应该是场景名，18个字节
 
 //设备信息链表结点
 typedef struct myDevice{
@@ -43,6 +45,22 @@ typedef struct CommandStreamFromTerminal{
     //指针域
     struct CommandStreamFromTerminal* next;
 }TerminalStream;
+
+//智能场景存储链表
+typedef struct myScene{
+    //数据域
+	u8 Flag;//对表头：Flag == 0场景被禁用，Flag == 1场景被启用；对结点：Flag == 0为触发条件，Flag == 1为执行指令
+    u8 DataLen;//记录Data的长度(in Byte)
+    u8 Data[MAX_DATA_IN_SCENE_LEN];//对表头："场景名"；对结点：触发条件代表着 对应终端短地址+大于或小于标志位+反馈的传感数据，执行指令代表着 对应终端短地址+命令码+有效数据长度+有效数据
+    //指针域
+    struct myScene* next;
+}Scene;
+
+typedef struct myScenes{
+    //指针域
+    Scene* SceneHeadNode;
+    struct myScenes* next;
+}Scenes;
 
 extern u8 AckFlag;
 extern u8 AckJudge;

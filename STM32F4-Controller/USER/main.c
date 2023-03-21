@@ -17,6 +17,7 @@ u8 ReadFlag = 0;//状态读取成功标志位
 Device* DeviceList = NULL;//设备长短地址数据链表
 Esp32CommandStream* Esp32CommandStreamList = NULL;//与Esp32间通信数据流链表
 TerminalStream* TerminalStreamList = NULL;//终端信息流链表
+Scenes* SceneList = NULL;//存储不同场景的表头的链表
 u8 Esp32AckFlag = 0;
 u8 PrintDeviceListFlag = 0;
 /*End of 全局变量*/
@@ -42,15 +43,24 @@ int main(void) {
 	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateDeviceList
 	Esp32CommandStreamList = CreateEsp32CommandStreamList();//创建与Esp32间通信数据流链表
 	TerminalStreamList = CreateTerminalStreamList();//创建终端信息流链表
+	SceneList = CreateSceneList();
 //	OLED_Clear();
 	Zigbee_Init(115200);
 	TIM2_Int_Init(10-1,8400-1);//84M/8400=10Khz的计数频率，计数10次为1ms,提供系统计时
 	TIM3_Int_Init(10000-1,8400-1);//84M/8400=10Khz的计数频率，计数10000次为1s(没用上)
 	USART3_Init(115200);//串口3与esp32-korvo-1通信
+
+	/*测试用*/
+	u8 SceneName[] = {'D','e','m','o'};
+	u8 demo1[] = {'D','e','m','o'};
+	InsertSceneNodeByEnd(SceneList,4,SceneName);
+	InsertSceneMemberNodeByFlag_User(SceneList,4,SceneName,1,3,EndAck);
+	InsertSceneMemberNodeByFlag_User(SceneList,4,SceneName,0,4,demo1);
+	
 	while (1){
 		LED1 = 0;//表示正常进入系统
 	    HandleEsp32CommandStream(Esp32CommandStreamList);//处理与Esp32间通信的数据流
-		HandleTerminalStream(TerminalStreamList);
+		HandleTerminalStream(TerminalStreamList);//处理等待发往终端数据流
 		if(PrintDeviceListFlag == 1){
 			PrintDeviceList(DeviceList);
 			Send_Custom_Data(USART2,0xFF,3,EndAck);
