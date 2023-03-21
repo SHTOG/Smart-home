@@ -173,7 +173,10 @@ void Analyse_Custom_Data(){
 	//开始解密数据
 	decrypt(Data,len,teaKey);
 	if(Data[8] == 0xFF){//收到了设备应答命令
-		if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
+		if(Data[9] == 0x00){//中控在请求应答
+			Send_Custom_Data(0xFF,2,Ack);//应答
+		}
+		else if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
 			AckFlag = 1;
 		}
 		else if(Data[10] == 0x00 && Data[11] == 0x00) {//拒绝入网
@@ -181,9 +184,6 @@ void Analyse_Custom_Data(){
 		}
 		else if(Data[10] == 0x00 && Data[11] == 0x01) {//同意入网
 			APPJudgeFlag = 1;
-		}
-		else if(Data[9] == 0x00){//中控在请求应答
-			Send_Custom_Data(0xFF,2,Ack);//应答
 		}
 	}
 //	else if(Data[8] == 0xXX){//移植时请修改0xXX为对应的设备码，并在else内写上收到指定指令所需执行的内容

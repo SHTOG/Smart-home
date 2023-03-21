@@ -9,21 +9,21 @@
 
 u8 ZigbeeOnlineFlag = 0;//在网Flag,置0表示没有连上协调器,置1表示已连上
 u8 OnlineFlag = 0;//在网Flag,置0表示没有连上生态,置1表示已连上
-u8 AgreeFlag  = 0;//APP同意终端入网标志位，置一时表示已得到APP的入网同意
+u8 APPJudgeFlag = 0;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
 
 void Try_To_Link(){
 	LED1FlashTime = 120;//闪烁两分钟,表示正在配对中
 	Zigbee_Change_Mode(0);//Zigbee进入HEX指令模式
 	if(ZigbeeOnlineFlag == 1) Zigbee_Restore_Factory_Setting();//Zigbee恢复出厂设置
 	Zigbee_Restart();
-	delay_ms(1000);
+//	delay_ms(1000);
 	IWDG_Feed();//喂狗
 	Zigbee_Set_Type_To_Active_Terminal();//设置模组类型为活跃终端
 	Zigbee_Restart();
 	delay_ms(100);
 	Zigbee_Open_Net();//打开网络准备配对
 	IWDG_Feed();//喂狗
-	delay_ms(6000);//稍微等待联网
+	delay_ms(4000);//稍微等待联网
 	IWDG_Feed();//喂狗
 	WaitTime = 0;
 	ZigbeeOnlineFlag = 0;
@@ -42,17 +42,18 @@ void Try_To_Link(){
 		Zigbee_Change_Mode(1);//进入透传模式
 		
 		//等待APP同意或拒绝
-		AckFlag = 0;
+		APPJudgeFlag = 0;
 		WaitTime = 0;
-		while(AckFlag != 1){
+		while(APPJudgeFlag == 0){
 			if(WaitTime >= 120){//120s没收到应答，直接退出，表示为没有入网
 				OnlineFlag = 0;
 				return ;
 			}
 			Send_Custom_Data(0x00,3,SelfShortAddr);
-			delay_ms(500);//考虑数据接收延迟,避免频繁发送导致中控数据拥堵
+			delay_ms(1000);//考虑数据接收延迟,避免频繁发送导致中控数据拥堵
 		}
-		OnlineFlag = 1;
+		if(APPJudgeFlag == 1) OnlineFlag = 1;//入网成功
+		else if(APPJudgeFlag == 2) OnlineFlag = 0;//入网失败
 	}
 	LED1FlashTime = 0;//指示灯停止闪烁
 	LED1 = 1;//熄灯
@@ -78,9 +79,8 @@ int main(void) {
 	TIM3_PWM_Init(500-1,72-1);//72M/72=1Mhz的计数频率,重装载值500，所以PWM频率为 1M/500=2Khz.(周期为500us)
 	EXTI0_Init();
 	/*初始化函数请放下上面*/
-
+	LED2 = 0;//测试用，可从核心板上直接观测到程序进入了while(1)
 	while (1){
-		LED2 = 0;//测试用，可从核心板上直接观测到程序进入了while(1)
 		if(Key1 == 0){//如果按键1被按下
 			WaitTime = 0;
 			while(Key1 == 0){//如果保持长按
@@ -91,27 +91,27 @@ int main(void) {
 			}
 		}
 		IWDG_Feed();//喂狗
-		if(OnlineFlag == 1){
-			LED2 = 0;//测试用
-			/*请在下面编写自己终端的代码*/
-			// 电灯根据模式工作
-			for(i = 0; i < 4; i++){
-				if(LEDmode[i] == 0){
-					TIM_SetCompare[i](TIM3,PWMval[i]);	//修改比较值，修改占空比
-				}
-				else if(LEDmode[i] == 1){
-					if(PWMval[i] >= 450) direction[i] = 0;
-					if(PWMval[i] <= 50) direction[i] = 1;
-					if(direction[i]) PWMval[i]++;
-					else PWMval[i]--;
-					TIM_SetCompare[i](TIM3,PWMval[i]);
-				}
+		/*请在下面编写自己终端的代码*/
+		// 电灯根据模式工作
+		for(i = 0; i < 4; i++){
+			if(LEDmode[i] == 0){
+				TIM_SetCompare[i](TIM3,PWMval[i]);	//修改比较值，修改占空比
 			}
-			delay_ms(2);
-			/*请在上面编写自己终端的代码*/
+			else if(LEDmode[i] == 1){
+				if(PWMval[i] >= 450) direction[i] = 0;
+				if(PWMval[i] <= 50) direction[i] = 1;
+				if(direction[i]) PWMval[i]++;
+				else PWMval[i]--;
+				TIM_SetCompare[i](TIM3,PWMval[i]);
+			}
+		}
+		delay_ms(2);
+		/*请在上面编写自己终端的代码*/
+		if(OnlineFlag == 1){
+			LED1 = 0;//测试用
 			
 		}
-		else if(OnlineFlag == 0)LED2 = 1;
+		else if(OnlineFlag == 0)LED1 = 1;
 	}
 	
 }

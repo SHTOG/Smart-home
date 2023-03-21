@@ -16,6 +16,7 @@ extern u8 Key1CD;
 extern u8 OnlineFlag;
 extern u8 LED1FlashTime;//LED1闪烁标志位，置1时使LED1开始闪烁
 extern u8 ZigbeeOnlineFlag;
+extern u8 APPJudgeFlag;
 
 //0,不支持ucos
 //1,支持ucos

@@ -77,10 +77,14 @@ void USART1_IRQHandler(void){
 				{
 					if(Res!=0x0a){
 						USART1_RX_STA &= 0xBFFF;
-						USART1_RX_BUF[USART1_RX_STA&0X3FFF]=0X0D ;//把0x0D放到USART1_RX_BUF的倒数第二位
+						USART1_RX_BUF[USART1_RX_STA&0X3FFF]=0x0D ;//把0x0D放到USART1_RX_BUF的倒数第二位
 						USART1_RX_STA++;//数据长度++
-						USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART1_RX_BUF的最后一位
-						USART1_RX_STA++;//数据长度++
+						if(Res==0x0d)USART1_RX_STA|=0x4000;
+						else {
+							USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res ;//把当前接收到的数据放到USART1_RX_BUF的最后一位
+							USART1_RX_STA++;//数据长度++
+					
+						}
 					}
 					else USART1_RX_STA|=0x8000;	//接收完成了 
 				}
@@ -173,14 +177,21 @@ void Analyse_Custom_Data(){
 	//开始解密数据
 	decrypt(Data,len,teaKey);
 	if(Data[8] == 0xFF){//收到了设备应答命令
-		if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
+		if(Data[9] == 0x00){//中控在请求应答
+			Send_Custom_Data(0xFF,2,Ack);//应答
+		}
+		else if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
 			AckFlag = 1;
 		}
-		else if(Data[9] == 0x00){//中控在请求应答
-			Send_Custom_Data(0xFF,2,Ack);//应答
+		else if(Data[10] == 0x00 && Data[11] == 0x00){//拒绝入网
+			APPJudgeFlag = 2;
+		}
+		else if(Data[10] == 0x00 && Data[11] == 0x01){//同意入网
+			APPJudgeFlag = 1;
 		}
 	}
 	else if(Data[8] == 0x01){//只有命令码为0x01的才需要分析执行
+		Send_Custom_Data(0xFF,2,Ack);//先回应再执行
 		if(Data[10] != 0){//对单个灯
 			if(Data[11] == 0x00){//关灯
 				LED_Close(Data[10]-1);
@@ -195,7 +206,7 @@ void Analyse_Custom_Data(){
 				LED_Light_Minus(Data[10]-1);
 			}
 			else if(Data[11] == 0x04){//亮度调至指定档位
-				LED_Light_Set(Data[10]-1,USART1_RX_BUF[16]);
+				LED_Light_Set(Data[10]-1,Data[12]);
 			}
 			else if(Data[11] == 0x05){//进入普通模式（开机默认）
 				LED_Mode(Data[10]-1,0);
@@ -205,7 +216,35 @@ void Analyse_Custom_Data(){
 			}
 		}
 		else{//对所有灯
-			if(Data[11] == 0x05){//进入普通模式（开机默认）
+			if(Data[11] == 0x00){//关灯
+				for(i = 0; i < 4; i++){
+					LED_Close(i);
+				}
+				
+			}
+			else if(Data[11] == 0x01){//开灯
+				for(i = 0; i < 4; i++){
+					LED_Open(i);
+				}
+			}
+			else if(Data[11] == 0x02){//亮度+
+				for(i = 0; i < 4; i++){
+					LED_Light_Plus(i);
+				}
+			}
+			else if(Data[11] == 0x03){//亮度-
+				for(i = 0; i < 4; i++){
+					LED_Light_Minus(i);
+				}
+				
+			}
+			else if(Data[11] == 0x04){//亮度调至指定档位
+				for(i = 0; i < 4; i++){
+					LED_Light_Set(i,Data[12]);
+				}
+				
+			}
+			else if(Data[11] == 0x05){//进入普通模式（开机默认）
 				for(i = 0; i < 4; i++){
 					LED_Mode(i,0);
 				}
@@ -219,7 +258,6 @@ void Analyse_Custom_Data(){
 				}
 			}
 		}
-		Send_Custom_Data(0xFF,2,Ack);
 		
 	}
 	free(Data);
