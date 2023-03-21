@@ -4,6 +4,18 @@
 #include "delay.h"
 #include "Zigbee.h"
 #include "24Cxx.h"
+Scenes* CreateSceneNode(Scene* newScene);
+Scenes* CreateSceneList(void);
+void InsertSceneNodeByEnd(Scenes* headNode, u8 SceneNameLen, u8* SceneName);
+void InsertSceneMemberNodeByFlag_User(Scenes* AllSceneList, u8 SceneNameLen, u8* SceneName, u8 Flag, u8 DataLen, u8* Data);
+void DeleteSceneNodeBySceneName(Scenes* headNode, u8 SceneNameLen, u8* SceneName);
+
+Scene* CreateSceneMemberNode(u8 Flag, u8 DataLen, u8* Data);
+Scene* CreateSceneMemberList(u8 DataLen,u8* Data);
+void InsertSceneMemberNodeByFlag_EXE(Scene* headNode, u8 Flag, u8 DataLen, u8* Data);
+void DeleteSceneMemberNodeByData(Scene* headNode, u8 DataLen, u8* Data) ;
+void DeleteSceneMemberNodeByEnd(Scene* headNode);
+
 
 TerminalStream* CreateTerminalStreamNode(u8* SLAddr, u8 type, u8 len, u8* Data);
 TerminalStream* CreateTerminalStreamList(void);
