@@ -1,6 +1,5 @@
 #ifndef __OLED_H__
 #define __OLED_H__
-#include "OLEDfont.h"
 void OLED_Write_Cmd(unsigned char cmd);
 void OLED_Write_Byte(unsigned char byte);
 void OLED_Clear(void);

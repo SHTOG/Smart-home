@@ -1,15 +1,6 @@
 #ifndef __USART_H
 #define __USART_H
-#include "stdio.h"	
-#include "stm32f4xx_conf.h"
 #include "sys.h" 
-#include "delay.h"
-#include "usart.h"
-#include "myList.h"
-#include "24Cxx.h"
-#include "Zigbee.h"
-#include "beep.h"
-#include "tea.h"
 
 #define USART_REC_LEN  			200  	//定义最大接收字节数 200
 

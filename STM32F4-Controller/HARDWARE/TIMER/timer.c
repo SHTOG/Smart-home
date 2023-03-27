@@ -1,5 +1,9 @@
 #include "timer.h"
 
+#include "led.h"
+#include "usart.h"
+#include "myList.h"
+#include "24Cxx.h"
 u16 MilliSecond = 0;//毫秒级计数器
 u8 Second = 0;//秒级计数器
 u8 Minute = 0;//分级计数器
@@ -111,7 +115,7 @@ void TIM3_IRQHandler(void){
 			UpdateDeviceList(DeviceList);//更新链表内所有终端在网状态
 			UpdateWaitTime = 0;
 		}
-		if(DeviceList->next != NULL && Second % 5 == 0 && PrintDeviceListFlag == 0)Send_Custom_Data(USART2,0x02,3,testData);//把温湿度数据发送到APP
+//测试用		if(DeviceList->next != NULL && Second % 5 == 0 && PrintDeviceListFlag == 0)Send_Custom_Data(USART2,0x02,3,testData);//把温湿度数据发送到APP
 		
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
 	}

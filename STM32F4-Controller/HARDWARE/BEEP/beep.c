@@ -1,5 +1,6 @@
 #include "beep.h" 
 
+#include "delay.h"
 //初始化PF8为输出口		    
 //BEEP IO初始化
 void BEEP_Init(void)

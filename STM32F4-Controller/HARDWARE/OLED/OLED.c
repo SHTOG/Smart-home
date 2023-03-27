@@ -1,6 +1,7 @@
+#include "OLED.h"
 #include "IIC.h"
 #include "Delay.h"
-#include "OLED.h"
+#include "OLEDfont.h"
 /*
 	注意下，我自己写的OLED字符取模是行列式，u8g2是逐列式
 */

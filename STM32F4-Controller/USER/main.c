@@ -1,7 +1,8 @@
 #include "sys.h" 
 #include "delay.h" 
 #include "usart.h" 
-#include "OLED.h"
+#include "OLED.h" 
+#include "OLEDFont.h"
 #include "stdlib.h"
 #include "Zigbee.h"
 #include "led.h"
@@ -18,6 +19,7 @@ Device* DeviceList = NULL;//设备长短地址数据链表
 Esp32CommandStream* Esp32CommandStreamList = NULL;//与Esp32间通信数据流链表
 TerminalStream* TerminalStreamList = NULL;//终端信息流链表
 Scenes* SceneList = NULL;//全场景链表
+SensingData* SensingDataList = NULL;//传感数据链表
 u8 Esp32AckFlag = 0;
 u8 PrintDeviceListFlag = 0;
 /*End of 全局变量*/
@@ -36,14 +38,14 @@ int main(void) {
 	while(!AT24CXX_Check()){
 		LED_Test(GPIOF,GPIO_Pin_9,200);
 	}
-	AT24CXX_Clear();//测试用（ban掉断电存储功能）
+//	AT24CXX_Clear();//测试用（ban掉断电存储功能）
 //	OLED_Init();		//初始化OLED
 //	OLED_Show_Chinese(2,1,welcome_C,5);//系统开机显示始迎界面，界面消失表示成功进入系统
 	USART2_Init(115200);//串口2与esp32模块通信
-	DeviceList = AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表，如果24Cxx没写过链表就等于调用了CreateDeviceList
+	AT24CXX_Load_List(0);//从24Cxx的首地址开始读取链表（Device和Scene的链表），如果24Cxx没写过链表就等于调用了CreateDeviceList
 	Esp32CommandStreamList = CreateEsp32CommandStreamList();//创建与Esp32间通信数据流链表
 	TerminalStreamList = CreateTerminalStreamList();//创建终端信息流链表
-	SceneList = CreateSceneList();
+	SensingDataList = CreateSensingDataList();
 //	OLED_Clear();
 	Zigbee_Init(115200);
 	TIM2_Int_Init(10-1,8400-1);//84M/8400=10Khz的计数频率，计数10次为1ms,提供系统计时
@@ -51,16 +53,15 @@ int main(void) {
 	USART3_Init(115200);//串口3与esp32-korvo-1通信
 
 	/*测试用*/
-	u8 SceneName[] = {'D','e','m','o'};
-	u8 demo1[] = {'D','e','m','o'};
-	InsertSceneNodeByEnd(SceneList,4,SceneName);
-	InsertSceneMemberNodeByFlag_User(SceneList,4,SceneName,1,3,EndAck);
-	InsertSceneMemberNodeByFlag_User(SceneList,4,SceneName,0,4,demo1);
-	
+//	u8 SceneName[] = {'D','e','m','o'};
+//	u8 demo1[] = {'D','e','m','o'};
+//	InsertSceneNodeByEnd(SceneList,4,SceneName);
+//	InsertSceneMemberNodeByFlag_User(SceneList,4,SceneName,1,3,EndAck);
+//	InsertSceneMemberNodeByFlag_User(SceneList,4,SceneName,0,4,demo1);
+
 	while (1){
 		LED1 = 0;//表示正常进入系统
-	    HandleEsp32CommandStream(Esp32CommandStreamList);//处理与Esp32间通信的数据流
-		HandleTerminalStream(TerminalStreamList);//处理等待发往终端数据流
+		HandleScenes(SceneList);
 		if(PrintDeviceListFlag == 1){
 			PrintDeviceList(DeviceList);
 			Send_Custom_Data(USART2,0xFF,3,EndAck);

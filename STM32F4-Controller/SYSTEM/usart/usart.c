@@ -1,5 +1,14 @@
 #include "usart.h"
 
+#include "stdio.h"	
+#include "stm32f4xx_conf.h"
+#include "delay.h"
+#include "usart.h"
+#include "myList.h"
+#include "24Cxx.h"
+#include "Zigbee.h"
+#include "beep.h"
+#include "tea.h"
 //读取USARTx->SR能避免莫名其妙的错误   
 //接收缓冲,最大200个字节.	
 u8 USART1_RX_BUF[200];     
@@ -421,6 +430,7 @@ void Analyse_APP_Data(){
 		else if(USART2_RX_BUF[16] == 0x00 && USART2_RX_BUF[17] == 0x04){
 			//删除指定终端
 			DeleteDeviceNodeByLongAddr(DeviceList,&USART2_RX_BUF[18]);
+			AT24CXX_Save_List(0,DeviceList,SceneList);//及时存入EEPROM
 		}
 	}
 	else{//否则就是需要执行的命令
@@ -441,14 +451,27 @@ void Analyse_Custom_Data(){
 	}
 	//开始解密数据
 	decrypt(Data,len,teaKey);
+	//检查数据源是否在生态内
 	
 	if(Data[8] == 0xFF){//设备应答命令
 		if(Data[10] == 'O' && Data[11] == 'K'){//设备应答ok
 			AckFlag = 1;
 		}
 	}
-	else if(Data[8] == 0x02){//暖通传感器数据
-		Send_Custom_Data(USART2,0x02,Data[9],&Data[10]);//把温湿度数据发送到APP
+	else if(Data[8] == 0x04){//空调专用传感器数据
+		if(CheckDeviceNodeByLongAddr(DeviceList,&Data[0],SelfShortAddr) == 0){
+			//如果数据源不在生态内，直接退出
+			return;
+		}
+		Send_Custom_Data(USART2,0x04,Data[9],&Data[10]);//把温湿度数据发送到APP
+	}
+	else if(Data[8] == 0x05){//独立温度传感器数据
+		if(CheckDeviceNodeByLongAddr(DeviceList,&Data[0],SelfShortAddr) == 0){
+			//如果数据源不在生态内，直接退出
+			return;
+		}
+		Send_Custom_Data(USART2,0x05,Data[9],&Data[10]);//把温度数据发送到APP
+		UpdateSensingData(SensingDataList,&Data[0],0x05,Data[9],&Data[10]);
 	}
 	else{//如果是其他数据那就存入数据流链表
 		InsTerminalStreamNodeByEnd(TerminalStreamList,&Data[0],Data[8],Data[9],&Data[10]);
@@ -463,7 +486,7 @@ void Send_Custom_Data(USART_TypeDef* USARTx, u8 type, u8 len, u8* Data){
 
 	if(USARTx == USART1){
 		delay_ms(50);//Zigbee模块自带延迟
-		
+
 		//将发送的数据封装到一个数组内
 		newDataLen = 10+len;
 		while(newDataLen % 8 != 0){//把除帧头帧尾数据大小补足到所占内存为8字节的倍数

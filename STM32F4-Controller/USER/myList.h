@@ -1,9 +1,12 @@
 #ifndef __MYLIST_H
 #define __MYLIST_H		
 #include "sys.h"	  	 
-#include "delay.h"
-#include "Zigbee.h"
-#include "24Cxx.h"
+
+SensingData* CreateSensingDataNode(u8* SLAddr, u8 type, u8 newDataLen, u8* newData);
+SensingData* CreateSensingDataList(void);
+void UpdateSensingData(SensingData* headNode,u8* SLAddr, u8 type, u8 newDataLen, u8* newData);
+u8 CmpSensingData(SensingData* headNode, u8* SLAddr, u8* Data);
+
 Scenes* CreateSceneNode(Scene* newScene);
 Scenes* CreateSceneList(void);
 void InsertSceneNodeByEnd(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
@@ -12,6 +15,7 @@ void DeleteSceneMemberNodeByData_User(Scenes* SceneList, u8 SceneNameLen, u8* Sc
 void DeleteSceneNodeBySceneName(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
 void StartScene(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
 void StopScene(Scenes* SceneList, u8 SceneNameLen, u8* SceneName);
+void HandleScenes(Scenes* SceneList);
 
 Scene* CreateSceneMemberNode(u8 Flag, u8 DataLen, u8* Data);
 Scene* CreateSceneMemberList(u8 DataLen,u8* Data);
@@ -19,14 +23,13 @@ void InsertSceneMemberNodeByFlag_Exe(Scene* headNode, u8 Flag, u8 DataLen, u8* D
 void DeleteSceneMemberNodeByData_Exe(Scene* headNode, u8 DataLen, u8* Data) ;
 void DeleteSceneMemberNodeByEnd(Scene* headNode);
 
-
 TerminalStream* CreateTerminalStreamNode(u8* SLAddr, u8 type, u8 len, u8* Data);
 TerminalStream* CreateTerminalStreamList(void);
 void InsTerminalStreamNodeByEnd(TerminalStream* headNode,u8* SLAddr,u8 type, u8 len, u8* Data);
 void HandleTerminalStream(TerminalStream* headNode);
 
 Esp32CommandStream* CreateEsp32CommandStreamNode(u8* DSAddr, u8 type, u8 len, u8* Data, u8 DataDirection) ;
-Esp32CommandStream* CreateEsp32CommandStreamList(void) ;
+Esp32CommandStream* CreateEsp32CommandStreamList(void);
 void InsertEsp32CommandStreamNodeByEnd(Esp32CommandStream* headNode,u8* DSAddr, u8 type, u8 len, u8* Data, u8 DataDirection);
 void HandleEsp32CommandStream(Esp32CommandStream* headNode);
 

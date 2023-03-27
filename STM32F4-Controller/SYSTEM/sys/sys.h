@@ -4,9 +4,10 @@
 #include "stdlib.h"
 #include "string.h"
 
-#define MAX_DATA_FROM_ESP32_LEN 26  //与esp32通信数据帧的有效数据最大长度
+#define MAX_DATA_FROM_ESP32_LEN 40  //与esp32通信数据帧的有效数据最大长度
 #define MAX_DATA_TO_Terminal_LEN 20  //对终端的控制命令的数据帧的有效数据最大长度
 #define MAX_DATA_IN_SCENE_LEN 18        //场景链表中Data最大长度,目前需求最大的应该是场景名，18个字节
+#define MAX_DATA_IN_SENCE_LEN 3        //传感数据链表Data最大长度
 
 //设备信息链表结点
 typedef struct myDevice{
@@ -49,7 +50,7 @@ typedef struct CommandStreamFromTerminal{
 //智能场景存储链表
 typedef struct myScene{
     //数据域
-	u8 Flag;//对表头：Flag == 0场景被禁用，Flag == 1场景被启用；对结点：Flag == 0为触发条件，Flag == 1为执行指令
+	u8 Flag;//对表头：Flag == 0场景被禁用，Flag == 1场景被启用,Flag == 2场景正在运行；对结点：Flag == 0为触发条件，Flag == 1为执行指令
     u8 DataLen;//记录Data的长度(in Byte)
     u8 Data[MAX_DATA_IN_SCENE_LEN];//对表头："场景名"；对结点：触发条件代表着 对应终端短地址+大于或小于标志位+反馈的传感数据，执行指令代表着 对应终端短地址+命令码+有效数据长度+有效数据
     //指针域
@@ -61,6 +62,15 @@ typedef struct myScenes{
     Scene* SceneHeadNode;
     struct myScenes* next;
 }Scenes;
+
+typedef struct mySensingData{
+    //数据域
+    u8 SLAddr[8];//传感数据源长地址
+    u8 type;//传感器终端型号
+    u8 Data[MAX_DATA_IN_SENCE_LEN];//传感数据
+    //指针域
+    struct mySensingData* next;
+}SensingData;
 
 extern u8 AckFlag;
 extern u8 AckJudge;
@@ -95,6 +105,7 @@ extern u8 EspWaitTime;//秒级等待应答时间,置零时开始计时,计到5�
 extern Esp32CommandStream* Esp32CommandStreamList;//与Esp32间通信数据流链表
 extern TerminalStream* TerminalStreamList;//终端信息流链表
 extern Scenes* SceneList;//全场景链表
+extern SensingData* SensingDataList;//传感数据链表
 extern u8 APPOpenNetCountDown;//APP开放终端入网倒计时（单位秒），当APP打开入网许可时，倒计时增加到120，这期间终端发来的设备信息命令才会被分析执行
 extern u8 APPJudgeFlag;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
 extern u8 PrintDeviceListFlag;

@@ -1,4 +1,7 @@
 #include "myList.h"
+#include "delay.h"
+#include "Zigbee.h"
+#include "24Cxx.h"
 
 u8 APPOpenNetCountDown = 0;//APP开放终端入网倒计时（单位秒），当APP打开入网许可时，倒计时增加到120，这期间终端发来的设备信息命令才会被分析执行
 u8 APPJudgeFlag = 0;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
@@ -31,6 +34,88 @@ u8 ArrCmp(u8 len, u8* dest, u8*src){
 	}
 	return 1;
 }
+
+/*********************************以下为对传感器数据的链表操作函数*********************************/
+//创建结点
+SensingData* CreateSensingDataNode(u8* SLAddr, u8 type, u8 newDataLen, u8* newData){
+	SensingData* newNode = (SensingData*)malloc(sizeof(SensingData));
+	newNode->type = type;
+	ArrCpy(8,newNode->SLAddr,SLAddr);
+	newNode->next = NULL;
+	return newNode;
+}
+
+//创建表头
+SensingData* CreateSensingDataList(void){
+	SensingData* headNode = (SensingData*)malloc(sizeof(SensingData));//指针变成了结构体变量
+	headNode->next = NULL;
+	return headNode;
+}
+
+
+/**
+  * @brief		更新传感数据(如果链表中已经有对应传感器，就更新数据，没有的话，就增加结点并更新数据)
+  * @param		headNode	：	传感数据链表
+  * @param		SLAddr		：	指定传感器长地址
+  * @param		type		：	指定传感器型号
+  * @param		newDataLen	：	新的传感数据长度
+  * @param		newData		：	新的传感数据
+  * @retval	    void
+  */
+void UpdateSensingData(SensingData* headNode, u8* SLAddr, u8 type, u8 newDataLen, u8* newData){
+	SensingData* posNode = headNode;
+	SensingData* newNode;
+	while(posNode->next != NULL){
+		posNode = posNode->next;
+		if(posNode->type && ArrCmp(2,posNode->SLAddr,SLAddr) == 1){
+			//找到了对应传感器
+			ArrCpy(newDataLen,posNode->Data,newData);
+			return;
+		}
+	}
+	//没找到指定长地址的传感器
+	//尾插法把此设备插入
+	newNode = CreateSensingDataNode(SLAddr, type, newDataLen, newData);
+	posNode->next = newNode;
+}
+
+/**
+  * @brief		对比指定长地址传感数据
+  * @param		headNode：	传感数据链表
+  * @param		SLAddr	：	指定传感器长地址
+  * @param		Data	：	待对比传感数据
+  * @retval	    0：最新数据小于待对比数据
+  * @retval	    1：最新数据大于待对比数据
+  * @retval	    1：最新数据等于待对比数据
+  * @retval	    3：链表内无指定传感器
+  */
+
+u8 CmpSensingData(SensingData* headNode, u8* SLAddr, u8* Data){
+	SensingData* posNode;
+	if(headNode->next == NULL){
+		//如果传感数据链表为空，直接退出
+		return 3;
+	}
+	else posNode = headNode->next;
+	while(posNode != NULL){
+		//遍历链表结点，直到找到对应长地址传感器
+		if(ArrCmp(8,SLAddr,posNode->SLAddr) == 1){
+			if(posNode->type == 0x05){
+				//如果是独立温度传感器
+				if(posNode->Data[0] > Data[0]) return 1;
+				else if(posNode->Data[0] < Data[0]) return 0;
+				else{
+					if(posNode->Data[1] > Data[1]) return 1;
+					else if(posNode->Data[1] < Data[1]) return 0;
+					else return 2;
+				}
+			}
+		}
+		else posNode = posNode->next;
+	}
+	return 3;
+}
+/***********************************************END******************************************/
 
 /*********************************以下为对所有场景的链表操作函数*********************************/
 //创建结点
@@ -198,6 +283,53 @@ void StopScene(Scenes* SceneList, u8 SceneNameLen, u8* SceneName){
 	//找到了指定名称的场景
 	posNode->SceneHeadNode->Flag = 0;//禁用场景
 }
+
+/**
+  * @brief		遍历执行场景链表
+  * @param		SceneList	：场景链表
+  * @retval	    void
+  */
+void HandleScenes(Scenes* SceneList){
+	Scenes* posNode = SceneList->next;
+	Scene* posScene;//此变量为posNode所包含的单场景
+	u8 CmpFlag;
+	HandleEsp32CommandStream(Esp32CommandStreamList);//处理与Esp32间通信的数据流
+	HandleTerminalStream(TerminalStreamList);//处理等待发往终端数据流
+	while(posNode != NULL){
+		//如果当前定位结点不是空的
+		posScene = posNode->SceneHeadNode;
+		if(posScene->Flag == 1){//场景被启用，但还未运行
+			posScene = posScene->next;//指向该单场景的第一个结点
+			while(posScene != NULL){//如果该节点不为空
+				if(posScene->Flag == 0){//如果是触发条件
+					CmpFlag = CmpSensingData(SensingDataList,&posScene->Data[0],&posScene->Data[9]);
+					if(CmpFlag != posScene->Data[8]) break;//如果对比结果与条件不符，直接退出循环
+				}
+				else if(posScene->Flag == 1){//如果是执行指令(能遍历到Flag == 1说明前面的条件都通过了)
+					/*设置命令发送方向*/
+					Zigbee_Change_Mode(0);
+					Set_Send_Target(&posScene->Data[0],0x01);//设置目标终端
+					Zigbee_Change_Mode(1);
+					/*设置完毕等待发送*/
+					AckFlag = 0;//清零应答标志位
+					WaitTime = 0;//倒计时重新开始计时
+					while(AckFlag != 1){
+						if(WaitTime >= 3){//3秒没有收到终端应答
+							SetDeviceOnlineFlagBySAddr(DeviceList,&posScene->Data[0]);
+							break;
+						}
+						Send_Custom_Data(USART1,posScene->Data[2],posScene->Data[3],&posScene->Data[4]);//发送指令
+						AckJudge = 1;//允许delay到一半退出delay
+						delay_ms(500);//等待终端的应答,目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
+					}
+					AckJudge = 0;//禁止delay到一半退出delay
+				}
+				posScene = posScene->next;
+			}
+		}
+		posNode = posNode->next;
+	}
+}
 /***********************************************END******************************************/
 
 
@@ -329,6 +461,11 @@ TerminalStream* CreateTerminalStreamList(void) {
 //末端插入法
 void InsTerminalStreamNodeByEnd(TerminalStream* headNode,u8* SLAddr,u8 type, u8 len, u8* Data) {
 	TerminalStream* posNode = headNode;
+	if(posNode->next == NULL){
+		TerminalStream* newNode = CreateTerminalStreamNode(SLAddr,type, len, Data);
+		posNode->next = newNode;
+		return;
+	}
 	while (posNode->next != NULL) {
 		if(ArrCmp(len,posNode->next->Data,Data) == 1 && posNode->next->len == len && posNode->next->type == type && ArrCmp(8,posNode->next->SLAddr,SLAddr) == 1) return;
 		posNode = posNode->next;
@@ -389,6 +526,7 @@ void HandleTerminalStream(TerminalStream* headNode){
 					Send_Custom_Data(USART1,0xFF,2,AllowAck);//同意
 					//纳入链表
 					InsertDeviceNodeByType(DeviceList,Data[0],1,posNode->SLAddr,&posNode->Data[1],0,NULL,0);
+					AT24CXX_Save_List(0,DeviceList,SceneList);//即时存入EEPROM
 				}
 				else if(APPJudgeFlag == 2){//表示APP已拒绝
 					//设置透传目标为对应设备
@@ -436,6 +574,7 @@ void InsertEsp32CommandStreamNodeByEnd(Esp32CommandStream* headNode,u8* DSAddr, 
 	Esp32CommandStream* posNode = headNode;
 	while (posNode->next != NULL) {
 		if(ArrCmp(len,posNode->next->Data,Data) == 1 && ArrCmp(2,posNode->next->DSAddr,DSAddr) == 1 && posNode->next->DataDirection == DataDirection) {
+			//如果同一指令重复接收那就只接收第一次
 			LED0 = 0;
 			return;
 		}
@@ -488,6 +627,9 @@ void HandleEsp32CommandStream(Esp32CommandStream* headNode){
 					else if(posNode->Data[0] == 0x07){//场景启用指令
 						StartScene(SceneList,posNode->Data[1],&posNode->Data[2]);
 					}
+					if(posNode->Data[0] >= 0 && posNode->Data[0] <= 5){
+						AT24CXX_Save_List(0,DeviceList,SceneList);//及时存入EEPROM
+					}
 				}
 			}
 			else{//如果是APP对终端的命令
@@ -505,7 +647,7 @@ void HandleEsp32CommandStream(Esp32CommandStream* headNode){
 					}
 					Send_Custom_Data(USART1,posNode->type,posNode->len,posNode->Data);//发送指令
 					AckJudge = 1;//允许delay到一半退出delay
-					delay_ms(100);//等待终端的应答,目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
+					delay_ms(500);//等待终端的应答,目前是在内部植入了一个对AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
 				}
 				AckJudge = 0;//禁止delay到一半退出delay
 			}
@@ -599,11 +741,21 @@ u8 CheckDeviceNodeByLongAddr(Device* headNode, u8* LongAddr, u8* ShortAddr) {
 		if(posNode->next == NULL) return 0;//没有查到该长地址的设备
 		posNode = posNode->next;
 	}
-	//找到了,标志入网，更新短地址
+	//找到了,标志入网
 	posNode->onlineFlag = 1;
-	posNode->ShortAddr[0] = ShortAddr[0];
-	posNode->ShortAddr[1] = ShortAddr[1];
-	return 1;//查到了该长地址的设备
+	if(ShortAddr[0] == 0x00 && ShortAddr[1] == 0x00){
+		//如果不打算更新短地址
+		//就直接退出了
+		return 1;
+	}
+	else{
+		//还要更新短地址的话就更新
+		//更新短地址
+		posNode->ShortAddr[0] = ShortAddr[0];
+		posNode->ShortAddr[1] = ShortAddr[1];
+		return 1;//查到了该长地址的设备
+	}
+	
 }
 
 
@@ -651,7 +803,7 @@ void UpdateDeviceList(Device* headNode){
 			}
 			Send_Custom_Data(USART1,0xFF,0,NULL);//请求应答
 			AckJudge = 1;
-			delay_ms(100);//目前是在内部植入了一个AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
+			delay_ms(500);//目前是在内部植入了一个AckJudge，后期可以用UCOS的任务轮转调度优化CPU资源
 		}
 		if(AckFlag == 1 && posNode->onlineFlag == 0){
 			posNode->onlineFlag = 1;
@@ -661,7 +813,7 @@ void UpdateDeviceList(Device* headNode){
 		posNode = posNode->next;
 	}
 	if(changeFlag == 1){
-		AT24CXX_Save_List(0,headNode);
+		
 	}
 }
 

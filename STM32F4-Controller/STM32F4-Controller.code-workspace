@@ -13,7 +13,8 @@
             "mylist.h": "c",
             "usart.h": "c",
             "stm32f4xx_conf.h": "c",
-            "delay.h": "c"
+            "delay.h": "c",
+            "oled.h": "c"
         }
     }
 }
