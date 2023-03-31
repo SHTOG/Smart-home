@@ -15,7 +15,6 @@
 #define LED2 PCout(13)// 调试直观观察程序进入主while循环
 
 
-
 void LED_Init(void);//LED GPIO初始化
 void LED1_Init(void);
 void LED2_Init(void);

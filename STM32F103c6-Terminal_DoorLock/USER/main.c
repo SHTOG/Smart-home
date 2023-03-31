@@ -101,9 +101,10 @@ int main(void){
 	RealPassword[3] = 0;
 	RealPassword[4] = 3;
 	RealPassword[5] = 0;
-	STMT_X_Pulse(1,128);//逆时针旋转半圈表示步进电机已经成功连接
+	STMT_X_Pulse(0,128);//逆时针旋转半圈表示步进电机已经成功连接
 	/*测试*/
 	while(1){
+		PBout(13) = 1; 
 		/*以下代码禁止修改*/
 		LED2 = 0;//测试用，可从核心板上直接观测到程序进入了while(1)
 		if(Key1 == 0){//如果按键1被按下
@@ -118,6 +119,8 @@ int main(void){
 		IWDG_Feed();//喂狗
 		/*以上代码禁止修改*/
 		KeyNum = MTXK_Scan();
+		delay_ms(20);
+		while(KeyNum == MTXK_Scan() && KeyNum != 0);
 		if(KeyNum != 0){
 			USART_SendData(USART1,KeyNum);//测试用
 			if(KeyNum == 4){//锁门
@@ -130,10 +133,11 @@ int main(void){
 				InputPassword = (u8*)malloc(sizeof(u8)*PasswordLen);//给密码缓冲区分配空间
 			}
 			else if(KeyNum == 13){//退出密码输入模式
-					MTXKInputFlag = 0;
+				MTXKInputFlag = 0;
 			}
 			if(MTXKInputFlag == 1){//正在输入密码中
 				if(KeyNum == 1){
+					while(MTXK_Scan() == 1);
 					InputPassword[index] = 7;
 					index++;
 				}
