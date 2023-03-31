@@ -68,7 +68,7 @@ void USART1_Init(u32 bound)
 void USART1_IRQHandler(void){
 	u8 Res;
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET){  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
-		
+
 		Res =USART_ReceiveData(USART1);	//读取接收到的数据
 		if((USART1_RX_STA&0x8000)==0){//接收未完成
 			if(USART1_RX_BUF[0] == 0xC1){

@@ -1,4 +1,8 @@
 #include "usart.h"
+#include "stdio.h"	
+#include "Zigbee.h"
+#include "tea.h"
+#include "stmt.h"
 
 //注意,读取USARTx->SR能避免莫名其妙的错误   	
 u8 USART1_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
@@ -49,8 +53,8 @@ void USART1_Init(u32 bound)
 
 	//Usart1 NVIC 配置
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1 ;//抢占优先级1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		//子优先级1
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;//抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		//子优先级1
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化VIC寄存器
 
@@ -107,6 +111,28 @@ void USART1_IRQHandler(void){
 					USART1_RX_BUF[1] = 0;
 				}
 			}
+			else if(USART1_RX_BUF[0] == 'B'){
+				if(Res != 'U' && Res != 'S' && Res != 'Y'){
+					//接收错误,重新开始
+					USART1_RX_STA=0;
+					USART1_RX_BUF[1] = 0;
+					USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
+					USART1_RX_STA++;//数据长度++
+				}					
+				else {					
+					USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res;
+					USART1_RX_STA++;//数据长度++
+				}
+				if(USART1_RX_STA == 4 && EnterModeFlag == 0) EnterModeFlag = 1;
+				else if(USART1_RX_STA > 4){
+					//接收错误,重新开始
+					USART1_RX_STA=0;
+					USART1_RX_BUF[1] = 0;
+					USART1_RX_BUF[0]=Res ;//把当前接收到的数据放到USART1_RX_BUF的第一位
+					USART1_RX_STA++;//数据长度++
+				}
+					
+			}
 			else if(USART1_RX_BUF[0] == 0){
 				//如果第一个字节是0，则判断为刚开始接收第一字节数据
 				USART1_RX_BUF[1] = 0;//给数据位Zigbee命令的时候用
@@ -151,15 +177,21 @@ void Analyse_Custom_Data(){
 	//开始解密数据
 	decrypt(Data,len,teaKey);
 	if(Data[8] == 0xFF){//收到了设备应答命令
-		if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
+		if(Data[9] == 0x00){//中控在请求应答
+			Send_Custom_Data(0xFF,2,Ack);//应答
+		}
+		else if(Data[10] == 0x4F && Data[11] == 0x4B){//收到了中控的应答
 			AckFlag = 1;
 		}
-		else if(Data[9] == 0x00){//中控在请求应答
-			Send_Custom_Data(0xFF,2,Ack);//发送自己的设备信息
+		else if(Data[10] == 0x00 && Data[11] == 0x00) {//拒绝入网
+			APPJudgeFlag = 2;
+		}
+		else if(Data[10] == 0x00 && Data[11] == 0x01) {//同意入网
+			APPJudgeFlag = 1;
 		}
 	}
-	else if(Data[8] == 0x03){//只有命令码为0x03的才需要分析执行
-		Send_Custom_Data(0x03,2,Ack);
+	else if(Data[8] == 0x03){//是对窗帘的控制命令
+		Send_Custom_Data(0xFF,2,Ack);//这句话不可或缺，收到中控的控制指令后应立即回复，告诉中控自己确实收到了
 		AllowChangeDeepFlag = 1;//第一次收到控制命令码时就开始允许更新CurtainDeep
 		if(Data[10] > 128) NewCurtainDeep = 128;
 		else NewCurtainDeep = Data[10];
@@ -171,7 +203,7 @@ void Analyse_Custom_Data(){
   * @brief		将数据封装到私有协议并发送
   * @param		type:自身设备码
   * @param		len :有效数据长度
-  * @param		Data :有效数据内容指针（使用时应该把有效数据封装在u8数组内，然后传参的时候就输入数组名就可以了）
+  * @param		Data :有效数据内容指针（如果是设备信息命令，Data指针指向自身短地址第一位)
   * @retval		void
   */
 void Send_Custom_Data(u8 type, u8 len, u8* Data){
@@ -189,13 +221,18 @@ void Send_Custom_Data(u8 type, u8 len, u8* Data){
 	i++;
 	newData[i] = len;
 	i++;
+	if(type == 0x00){
+		newData[i] = 0x01;//这里一定要修改为对应终端的设备类型码
+		i++;
+		len--;
+	}
 	for(; j<len ;i++,j++){
 		newData[i] = Data[j];
 	}
 	for(; i < newDataLen; i++){
-		newData[i] = 0;
+		newData[i] = 1;
 	}
-	
+
 	//加密
 	encrypt(newData,newDataLen,teaKey);
 
@@ -219,5 +256,4 @@ void Send_Custom_Data(u8 type, u8 len, u8* Data){
 	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	free(newData);
 }
-
 

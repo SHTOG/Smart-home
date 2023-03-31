@@ -3,7 +3,7 @@
 #include "iwdg.h"
 #include "mtxk.h"
 
-u16 MilliSecond = 0;//毫秒级计数器
+uint32_t MilliSecond = 0;//毫秒级计数器
 u8 WaitTime = 0;//等待时长，每秒增加1
 
 /**
@@ -54,15 +54,12 @@ void TIM2_IRQHandler(void){
 		}
 		/*以上代码请勿修改*/
 		/*需要毫秒级触发的指令写下面*/
-        if(MTXKCD < MilliSecond){
-            MilliSecond = 0;
-            MTXKCD = 0;
-        }
-
+		if(MilliSecond + 20 < MTXKCD){
+			MTXKCD = 0;
+		}
 		/*需要毫秒级触发的指令写上面*/
-		if(MilliSecond == 1000){//以下语句每秒执行一次
+		if(MilliSecond % 1000 == 0){//以下语句每秒执行一次
 			/*以下代码请勿修改*/
-			MilliSecond = 0;
 			if(LED1FlashTime > 0){
 				LED1FlashTime--;
 				if(LED1FlashTime == 0xFF) LED1FlashTime = 0;

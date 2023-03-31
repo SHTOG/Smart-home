@@ -2,7 +2,6 @@
 
 #include "IIC.h"
 #include "delay.h"
-#include "myList.h"
 //初始化IIC接口
 void AT24CXX_Init(void){
 	IIC_Init();//IIC初始化
@@ -146,106 +145,6 @@ void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite)
 		AT24CXX_WriteOneByte(WriteAddr,*pBuffer);
 		WriteAddr++;
 		pBuffer++;
-	}
-}
-
-/**
-   *@brief	在AT24CXX里面的指定地址开始写入链表
-   *@param	WriteAddr	:开始写入的地址 对24c32为0~4095
-   *@param	DeviceList	:设备信息列链表头结点
-   *@param	SceneList	:全场景链表头结点
-   *@retval	void
-   */
-void AT24CXX_Save_List(u16 WriteAddr,Device* DeviceList,Scenes* SceneList){
-	u8 i;
-	Device* DevicePosNode = DeviceList->next;
-	AT24CXX_WriteOneByte(EE_TYPE-1,0x00);//24Cxx设备的在倒数第二位写00，表示已经正在保存链表
-	while(DevicePosNode != NULL){
-		AT24CXX_WriteOneByte(WriteAddr++,DevicePosNode->type);
-		for(i = 0; i < 8; i++){
-			AT24CXX_WriteOneByte(WriteAddr++,DevicePosNode->LongAddr[i]);
-		}
-		for(i = 0; i < 2; i++){
-			AT24CXX_WriteOneByte(WriteAddr++,DevicePosNode->ShortAddr[i]);
-		}
-		AT24CXX_WriteOneByte(WriteAddr++,DevicePosNode->PosNameLen);
-		for(i = 0; i < DevicePosNode->PosNameLen; i++){
-			AT24CXX_WriteOneByte(WriteAddr++,DevicePosNode->PosName[i]);
-		}
-		AT24CXX_WriteOneByte(WriteAddr++,DevicePosNode->SerialNumber);
-		DevicePosNode = DevicePosNode->next;
-	}
-	AT24CXX_WriteOneByte(WriteAddr++, 0xFF);//在设备信息链表的最末端写一个0xFF封尾
-	Scenes* ScenesPosNode = SceneList->next;
-	Scene* ScenePosNode;
-	while(ScenesPosNode != NULL){
-		ScenePosNode = ScenesPosNode->SceneHeadNode;
-		while(ScenePosNode != NULL){
-			AT24CXX_WriteOneByte(WriteAddr++,ScenePosNode->Flag);
-			AT24CXX_WriteOneByte(WriteAddr++,ScenePosNode->DataLen);
-			for(i = 0; i < ScenePosNode->DataLen; i++){
-				AT24CXX_WriteOneByte(WriteAddr++,ScenePosNode->Data[i]);
-			}
-			ScenePosNode = ScenePosNode->next;
-		}
-		AT24CXX_WriteOneByte(WriteAddr++, 0xFE);//在单链表的最末端写一个0xFE封尾
-		ScenesPosNode = ScenesPosNode->next;
-	}
-	AT24CXX_WriteOneByte(WriteAddr++, 0xFF);//在全场景链表的最末端写一个0xFF封尾
-	AT24CXX_WriteOneByte(EE_TYPE-1,0x66);//24Cxx设备的在倒数第二位写66，表示已经完整保存过链表
-}
-
-
-/**
-   *@brief	在AT24CXX里面的指定地址开始读取链表
-   *@param	ReadAddr:开始读取的地址 对24c02为0~255
-   *@param	
-   *@retval	Device	:读取到的结构体指针
-   */
-void AT24CXX_Load_List(u16 ReadAddr){
-	u8 i;
-	Device newDevice;
-	Scene newSceneHead;
-	Scene newScene;
-	DeviceList = CreateDeviceList();
-	SceneList = CreateSceneList();
-	if(AT24CXX_ReadOneByte(EE_TYPE-1) == 0x66){//如果曾写过链表,则读取，否则就只是创建了一个新的链表
-		while(AT24CXX_ReadOneByte(ReadAddr) != 0xFF){
-			newDevice.type = AT24CXX_ReadOneByte(ReadAddr++);
-			for(i = 0; i < 8; i++){
-				newDevice.LongAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
-			}
-			for(i = 0; i < 2; i++){
-				newDevice.ShortAddr[i] = AT24CXX_ReadOneByte(ReadAddr++);
-			}
-			newDevice.PosNameLen = AT24CXX_ReadOneByte(ReadAddr++);
-			for(i = 0; i < newDevice.PosNameLen; i++){
-				newDevice.PosName[i] = AT24CXX_ReadOneByte(ReadAddr++);
-			}
-			newDevice.SerialNumber = AT24CXX_ReadOneByte(ReadAddr++);
-			InsertDeviceNodeByType(DeviceList, newDevice.type,0, newDevice.LongAddr, newDevice.ShortAddr,newDevice.PosNameLen,newDevice.PosName,newDevice.SerialNumber);
-		}
-		ReadAddr++;
-		while(AT24CXX_ReadOneByte(ReadAddr) != 0xFF){//如果有场景链表被存进去了
-			//先把场景单链表的头结点读出
-			newSceneHead.Flag = AT24CXX_ReadOneByte(ReadAddr++);
-			newSceneHead.DataLen = AT24CXX_ReadOneByte(ReadAddr++);
-			for(i = 0; i < newSceneHead.DataLen; i++){	
-				newSceneHead.Data[i] = AT24CXX_ReadOneByte(ReadAddr++);
-			}
-			InsertSceneNodeByEnd(SceneList,newSceneHead.DataLen,newSceneHead.Data);
-			if(newSceneHead.Flag == 1){//如果该场景被启动
-				StartScene(SceneList,newSceneHead.DataLen,newSceneHead.Data);
-			}
-			while(AT24CXX_ReadOneByte(ReadAddr) != 0xFE){
-				newScene.Flag = AT24CXX_ReadOneByte(ReadAddr++);
-				newScene.DataLen = AT24CXX_ReadOneByte(ReadAddr++);
-				for(i = 0; i < newScene.DataLen; i++){	
-					newScene.Data[i] = AT24CXX_ReadOneByte(ReadAddr++);
-				}
-				InsertSceneMemberNodeByFlag_User(SceneList,newSceneHead.DataLen,newSceneHead.Data,newScene.Flag,newScene.DataLen,newScene.Data);
-			}
-		}
 	}
 }
 

@@ -23,7 +23,7 @@ void Try_To_Link(){
 	delay_ms(100);
 	Zigbee_Open_Net();//打开网络准备配对
 	IWDG_Feed();//喂狗
-	delay_ms(4000);//稍微等待联网
+	delay_ms(5000);//稍微等待联网
 	IWDG_Feed();//喂狗
 	WaitTime = 0;
 	ZigbeeOnlineFlag = 0;

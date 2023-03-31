@@ -148,7 +148,7 @@ void Zigbee_Update_OnlineFlag(void){
 	WaitTime = 0;
 	while(AckFlag != 1){
 		Send_Custom_Data(0x00,3,SelfShortAddr);
-		delay_ms(200);//考虑数据接收延迟,避免频繁发送导致中控数据拥堵
+		delay_ms(500);//考虑数据接收延迟,避免频繁发送导致中控数据拥堵
 		if(WaitTime >= 10){//10s没收到应答，直接退出，表示为没有入网
 			OnlineFlag = 0;
 			return ;

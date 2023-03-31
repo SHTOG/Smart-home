@@ -1,6 +1,6 @@
 #include "mtxk.h"
 #include "timer.h"
-u16 MTXKCD = 0;//用于矩阵键盘消抖
+uint32_t MTXKCD = 0;//用于矩阵键盘消抖
 
 //矩阵键盘IO占用情况：矩阵键盘:1~4(A0~3)、5~8(A4~7)
 void MTXK_Init(void){
@@ -25,8 +25,8 @@ u8 MTXK_Scan(void){
 	GPIO_ResetBits(GPIOA,GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7);//拉低列线
 	temp = GPIO_ReadInputData(GPIOA) & 0x00FF;
 	if(temp != 0x0F){//说明有按键被按下
-		if(MTXKCD <= MilliSecond){
-			MTXKCD = MilliSecond + 150;
+//		if(MTXKCD <= MilliSecond){
+//			MTXKCD = MilliSecond + 150;
 			temp >>= 4;
 			while((temp & 0x01) != 0x01){//列扫描
 				temp >>= 1;
@@ -81,8 +81,8 @@ u8 MTXK_Scan(void){
 					default:return 0;
 				}
 			}
-		}
-		else return 0;
+//		}
+//		else return 17;
 	}
 	return 0;
 }

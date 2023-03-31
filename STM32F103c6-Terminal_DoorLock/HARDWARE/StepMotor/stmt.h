@@ -1,11 +1,10 @@
 #ifndef __STMT_H
 #define __STMT_H			  	 
 #include "sys.h"
-#include "delay.h"
-#define STMTAP	PBout(15)  
-#define STMTAM	PBout(14)
-#define STMTBP	PBout(13)
-#define STMTBM	PBout(12)
+#define STMTAP	PAout(8)  
+#define STMTAM	PBout(15)
+#define STMTBP	PBout(14)
+#define STMTBM	PBout(13)
 
 #define MAXDEEP  128//完全打开窗帘所需Deep
 #define MAXDEEPAROUND   5//这里先假设电机转5圈完全打开窗帘

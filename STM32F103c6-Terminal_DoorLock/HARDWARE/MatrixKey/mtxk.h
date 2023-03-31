@@ -3,7 +3,7 @@
 #include "sys.h"
 #include "timer.h"
 
-extern u16 MTXKCD;
+extern uint32_t MTXKCD;
 
 void MTXK_Init(void);
 u8 MTXK_Scan(void);

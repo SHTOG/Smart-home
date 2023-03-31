@@ -1,35 +1,46 @@
 #include "led.h"
 
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEKÕ½½¢STM32¿ª·¢°å
-//LEDÇı¶¯´úÂë	   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ĞŞ¸ÄÈÕÆÚ:2012/9/2
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2009-2019
-//All rights reserved									  
-////////////////////////////////////////////////////////////////////////////////// 	   
+u8 LED1FlashTime = 0;//LED1é—ªçƒå‰©ä½™æ—¶é•¿,å½’0æ—¶åœæ­¢é—ªçƒ
 
-//³õÊ¼»¯PB5ºÍPE5ÎªÊä³ö¿Ú.²¢Ê¹ÄÜÕâÁ½¸ö¿ÚµÄÊ±ÖÓ		    
-//LED IO³õÊ¼»¯
-void LED_Init(void)
-{
- 
- GPIO_InitTypeDef  GPIO_InitStructure;
- 	
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC|RCC_APB2Periph_GPIOE, ENABLE);	 //Ê¹ÄÜPB,PE¶Ë¿ÚÊ±ÖÓ
-	
- GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;				 //LED0-->PB.5 ¶Ë¿ÚÅäÖÃ
- GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //ÍÆÍìÊä³ö
- GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO¿ÚËÙ¶ÈÎª50MHz
- GPIO_Init(GPIOC, &GPIO_InitStructure);					 //¸ù¾İÉè¶¨²ÎÊı³õÊ¼»¯GPIOB.5
- GPIO_SetBits(GPIOC,GPIO_Pin_13);						 //PB.5 Êä³ö¸ß
-
- GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;	    		 //LED1-->PE.5 ¶Ë¿ÚÅäÖÃ, ÍÆÍìÊä³ö
- GPIO_Init(GPIOE, &GPIO_InitStructure);	  				 //ÍÆÍìÊä³ö £¬IO¿ÚËÙ¶ÈÎª50MHz
- GPIO_SetBits(GPIOE,GPIO_Pin_5); 						 //PE.5 Êä³ö¸ß 
+void LED_Init(void){
+	LED1_Init();
+	LED2_Init();
 }
- 
+
+void LED1_Init(void){
+	GPIO_InitTypeDef  GPIO_InitStructure;
+ 	
+ 	RCC_APB2PeriphClockCmd(LED1_Clock, ENABLE);	 		//ä½¿èƒ½PB,PEç«¯å£æ—¶é’Ÿ
+	
+	GPIO_InitStructure.GPIO_Pin = LED1_Pin;				//LED1ç«¯å£é…ç½®
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 	//æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//IOå£é€Ÿåº¦ä¸º50MHz
+	GPIO_Init(LED1_GPIO, &GPIO_InitStructure);			//æ ¹æ®è®¾å®šå‚æ•°åˆå§‹åŒ–
+	GPIO_SetBits(LED1_GPIO,LED1_Pin);					//LED1è¾“å‡ºé«˜
+}
+
+void LED2_Init(void){
+	GPIO_InitTypeDef  GPIO_InitStructure;
+ 	
+ 	RCC_APB2PeriphClockCmd(LED2_Clock, ENABLE);	 		//ä½¿èƒ½PB,PEç«¯å£æ—¶é’Ÿ
+
+	GPIO_InitStructure.GPIO_Pin = LED2_Pin;	    		//LED2ç«¯å£é…ç½®
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 	//æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//IOå£é€Ÿåº¦ä¸º50MHz
+	GPIO_Init(LED2_GPIO, &GPIO_InitStructure);	  		//æ ¹æ®è®¾å®šå‚æ•°åˆå§‹åŒ–
+	GPIO_SetBits(LED2_GPIO,LED2_Pin); 					//LED2 è¾“å‡ºé«˜ 
+}
+/**
+
+  * @brief    ç”¨ä¸€ä¸ªledçš„é—ªçƒèµ·åˆ°æµ‹è¯•ç¨‹åºè¿›ç¨‹ä½œç”¨
+  * @param    GPIO_TypeDef* GPIOxã€uint16_t GPIO_Pin: ledæ‰€æ¥ioå£
+  * @param    ledäº®ç­åˆ‡æ¢æ‰€ç»å†æ—¶é—´ï¼ˆmsï¼‰
+  * @retval    
+  */
+
+void LED_Test(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin,u16 xms){
+	GPIO_ResetBits(GPIOx,GPIO_Pin);
+    delay_ms(xms);
+    GPIO_SetBits(GPIOx,GPIO_Pin);
+    delay_ms(xms);
+}

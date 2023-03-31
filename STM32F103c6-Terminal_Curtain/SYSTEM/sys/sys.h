@@ -3,9 +3,15 @@
 #include "stm32f10x.h"
 #include "stdlib.h"
 
-
-extern u16 WaitTime;
-
+extern u8 WaitTime;
+extern u8 Key1CD;
+extern u8 OnlineFlag;
+extern u8 LED1FlashTime;//LED1闪烁标志位，置1时使LED1开始闪烁
+extern u8 ZigbeeOnlineFlag;
+extern u8 APPJudgeFlag;
+extern u8 CurtainDeep;
+extern u8 AllowChangeDeepFlag;
+extern u8 NewCurtainDeep;
 //0,不支持ucos
 //1,支持ucos
 #define SYSTEM_SUPPORT_OS		0		//定义系统文件夹是否支持UCOS
