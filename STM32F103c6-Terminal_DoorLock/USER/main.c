@@ -79,13 +79,13 @@ int main(void){
 	Key_Init();			//按键初始化
 	USART1_Init(115200);//初始化串口1(通信用，有功能需要用到串口请换别的串口号)
 	TIM2_Int_Init(10-1,7200-1);//定时器时钟72M，分频系数7200，所以72M/7200=10Khz的计数频率，计数10次为1ms
-	Zigbee_Change_Mode(0);//Zigbee进入HEX指令模式
-	Zigbee_Get_State();//这个函数执行完会得到ZigbeeOnlineFlag的值
-	if(ZigbeeOnlineFlag == 1){
-		Zigbee_Set_Send_Target();//设置透传目标为中控
-		Zigbee_Change_Mode(1);
-		Zigbee_Update_OnlineFlag();//这个函数执行完会得到OnlineFlag的值，为后面的while(1)提供执行方向
-	}
+//	Zigbee_Change_Mode(0);//Zigbee进入HEX指令模式
+//	Zigbee_Get_State();//这个函数执行完会得到ZigbeeOnlineFlag的值
+//	if(ZigbeeOnlineFlag == 1){
+//		Zigbee_Set_Send_Target();//设置透传目标为中控
+//		Zigbee_Change_Mode(1);
+//		Zigbee_Update_OnlineFlag();//这个函数执行完会得到OnlineFlag的值，为后面的while(1)提供执行方向
+//	}
 	/*初始化函数请放下下面*/
 	MTXK_Init();
 	STMT_Init();
@@ -187,11 +187,9 @@ int main(void){
 					if(i == PasswordLen){//输入的密码对得上
 						STMT_X_Pulse(0,256);//顺时针旋转半圈表示开锁
 					}
-					else{//密码输入错误，清空输入密码缓冲区，继续等待输入密码
-						index = 0;//清零正在输入的密码位数
-						free(InputPassword);//释放指针内存
-						InputPassword = (u8*)malloc(sizeof(u8)*PasswordLen);//给密码缓冲区分配空间
-					}						
+					index = 0;//清零正在输入的密码位数
+					free(InputPassword);//释放指针内存
+					InputPassword = (u8*)malloc(sizeof(u8)*PasswordLen);//给密码缓冲区分配空间
 				}
 			}
 		}
