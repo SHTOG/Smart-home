@@ -22,6 +22,7 @@ Scenes* SceneList = NULL;//全场景链表
 SensingData* SensingDataList = NULL;//传感数据链表
 u8 Esp32AckFlag = 0;
 u8 PrintDeviceListFlag = 0;
+u32 BJTimeInSecond = 86401;//以秒计的北京时间，一天有86400秒,上电初始化为不合理的86401，保证程序需要处理有关时间的任务时知道中控的时间还未校准
 /*End of 全局变量*/
 
 /*Begin of 函数声明*/

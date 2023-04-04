@@ -4,6 +4,7 @@
 #include "stdlib.h"
 #include "string.h"
 
+#define MAX_DATA_OF_DEVICE_LEN 5    //终端需要用于双向通讯的数据最大长度
 #define MAX_DATA_FROM_ESP32_LEN 40  //与esp32通信数据帧的有效数据最大长度
 #define MAX_DATA_TO_Terminal_LEN 20  //对终端的控制命令的数据帧的有效数据最大长度
 #define MAX_DATA_IN_SCENE_LEN 18        //场景链表中Data最大长度,目前需求最大的应该是场景名，18个字节
@@ -12,13 +13,14 @@
 //设备信息链表结点
 typedef struct myDevice{
     //数据域
-    u8 type;            //电器类型
-    u8 onlineFlag;      //入网标志，0-未入网，1-已入网
-    u8 LongAddr[8];     //Zigbee设备长地址
-    u8 ShortAddr[2];    //Zigbee设备短地址
-    u8 PosNameLen;      //空间位置名的大小(字节)
-    u8 PosName[18];     //终端被用户安排的空间位置(最多6个中文或18个英文)
-    u8 SerialNumber;    //终端编号，用以区分同一空间位置的同类型家居
+    u8 type;                                //电器类型
+    u8 onlineFlag;                          //入网标志，0-未入网，1-已入网
+    u8 LongAddr[8];                         //Zigbee设备长地址
+    u8 ShortAddr[2];                        //Zigbee设备短地址
+    u8 PosNameLen;                          //空间位置名的大小(字节)
+    u8 PosName[18];                         //终端被用户安排的空间位置(最多6个中文或18个英文)
+    u8 SerialNumber;                        //终端编号，用以区分同一空间位置的同类型家居
+    u8 SelfData[MAX_DATA_OF_DEVICE_LEN];    //终端需要用于双向通讯的数据
     //指针域
     struct myDevice* next;
 }Device;
@@ -110,6 +112,7 @@ extern u8 APPOpenNetCountDown;//APP开放终端入网倒计时（单位秒），
 extern u8 APPJudgeFlag;//来自APP的入网判断标志位，如果为1，表示同意，为2表示拒绝，闲时置0
 extern u8 PrintDeviceListFlag;
 extern u8 UpdateWaitTime;
+extern u32 BJTimeInSecond;
 
 //0,不支持ucos
 //1,支持ucos

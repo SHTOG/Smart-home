@@ -288,7 +288,7 @@ void USART2_IRQHandler(void){
 			//如果接收到的是自定义传输的数据格式
 			if(USART2_RX_STA&0x4000)//接收到了0x0d
 			{
-				if(Res!=0x0a){
+				if(Res!=0x0a || USART2_RX_STA+1 < 16 || USART2_RX_STA < USART2_RX_BUF[15] + 16){//还没接收完捏
 					USART2_RX_STA &= 0xBFFF;
 					USART2_RX_BUF[USART2_RX_STA&0X3FFF]=0X0D ;//把0x0D放到USART1_RX_BUF的倒数第二位
 					USART2_RX_STA++;//数据长度++
@@ -410,7 +410,7 @@ void Analyse_APP_Data(){
 	for(i = 0; i < 8; i++){
 		if(USART2_RX_BUF[4+i] != SelfLongAddr[i]) return;//判断是不是属于自己的命令，不是就ヾ(￣▽￣)Bye~Bye~
 	}
-	if(USART2_RX_BUF[14] == 0xFF){//如果是ESP(或APP)的应答信号		
+	if(USART2_RX_BUF[14] == 0xFF){//如果是ESP32的应答信号
 		if(USART2_RX_BUF[16] == 'O' && USART2_RX_BUF[17] == 'K') Esp32AckFlag = 1;
 		else if(USART2_RX_BUF[16] == 0x00 && USART2_RX_BUF[17] == 0x00){
 			APPJudgeFlag = 2;//拒绝入网
@@ -432,6 +432,9 @@ void Analyse_APP_Data(){
 			DeleteDeviceNodeByLongAddr(DeviceList,&USART2_RX_BUF[18]);
 			AT24CXX_Save_List(0,DeviceList,SceneList);//及时存入EEPROM
 		}
+	}
+	else if(USART2_RX_BUF[14] == 0xFD){//如果是时间校准命令
+		BJTimeInSecond = USART2_RX_BUF[16]*3600 + USART2_RX_BUF[17]*60 + USART2_RX_BUF[18];
 	}
 	else{//否则就是需要执行的命令
 		//存入待处理数据流链表

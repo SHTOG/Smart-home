@@ -302,8 +302,18 @@ void HandleScenes(Scenes* SceneList){
 			posScene = posScene->next;//指向该单场景的第一个结点
 			while(posScene != NULL){//如果该节点不为空
 				if(posScene->Flag == 0){//如果是触发条件
-					CmpFlag = CmpSensingData(SensingDataList,&posScene->Data[0],&posScene->Data[9]);
-					if(CmpFlag != posScene->Data[8]) break;//如果对比结果与条件不符，直接退出循环
+					if(ArrCmp(8,SelfLongAddr,&posScene->Data[0])){//如果是时间限定条件
+						if(posScene->Data[8] == 0){//如果是定时执行
+							if(posScene->Data[9]*60 + posScene->Data[10] != BJTimeInSecond / 60) break;//如果没到指定时间，退出对当前场景的判断
+						}
+						else if(posScene->Data[8] == 1){//如果是时间段内执行
+							if(posScene->Data[9]*3600 + posScene->Data[10]*60 + posScene->Data[11] > BJTimeInSecond || posScene->Data[12]*3600 + posScene->Data[13]*60 + posScene->Data[14] <BJTimeInSecond) break;//不在指定时间范围内，退出对当前场景的判断
+						}
+					}
+					else{
+						CmpFlag = CmpSensingData(SensingDataList,&posScene->Data[0],&posScene->Data[9]);
+						if(CmpFlag != posScene->Data[8]) break;//如果对比结果与条件不符，退出对当前场景的判断
+					}
 				}
 				else if(posScene->Flag == 1){//如果是执行指令(能遍历到Flag == 1说明前面的条件都通过了)
 					/*设置命令发送方向*/
@@ -792,7 +802,7 @@ void UpdateDeviceList(Device* headNode){
 				Esp32AckFlag = 0;
 				EspWaitTime = 0;
 				while(Esp32AckFlag == 0){
-					if(EspWaitTime == 3){//超时退出,Esp掉线
+					if(EspWaitTime == 3){//超时退出,Esp32繁忙
 						break; 
 					}
 					Send_Custom_Data(USART2,0x00,12,Data);//发送数据
